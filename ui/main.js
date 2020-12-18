@@ -9,7 +9,7 @@ function createWindow () {
     }
   })
 
-  win.loadFile('gauge.html')
+  win.loadFile('calories/cal.html')
 }
 
 app.whenReady().then(createWindow)

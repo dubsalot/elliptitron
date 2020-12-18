@@ -1,3 +1,13 @@
+<head>
+    <meta charset="UTF-8">
+    <script>
+      window.nodeRequire = require;
+      delete window.require;
+      delete window.exports;
+      delete window.module;        
+    </script>
+    <script src="./cal.js"></script>
+  </head>
 <body onload="draw(120);">
     <div>
         Change the speed in the dropdown to see the dial position change
@@ -6,11 +16,12 @@
             <option value="30">Speed = 30</option>
             <option value="50">Speed = 50</option>
             <option value="60">Speed = 60</option>
+            <option value="90">Speed = 90</option>
             <option value="140">Speed = 140</option>
             <option value="160">Speed = 160</option>
         </select>
     </div>
-    <canvas class="canvas" id="myCanvas" width="600" height="600">
+    <canvas class="canvas" id="myCanvas" width="300" height="300">
         Your browser does not support the HTML5 canvas tag.</canvas>
 </body>
 

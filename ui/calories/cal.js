@@ -15,8 +15,8 @@ function draw(speed)
       context.arc(centerX, centerY, radius, Math.PI*0.10, Math.PI*-1.1, true);
 
       var gradience = context.createRadialGradient(centerX, centerY, radius-radius/2, centerX, centerY, radius-radius/8);
-       gradience.addColorStop(0, '#ff9000');
-       gradience.addColorStop(1, '#000000');
+       gradience.addColorStop(0, '#ffffff');
+       gradience.addColorStop(1, '#E5E5E5');
 
        context.fillStyle = gradience;
        context.fill();
@@ -24,7 +24,7 @@ function draw(speed)
        context.restore();
 
 	context.beginPath();
-	context.strokeStyle = '#ffff00';
+	context.strokeStyle = '#2195B2';
 	context.translate(centerX,centerY);
 	var increment = 5;
 	context.font="15px Helvetica";
@@ -35,7 +35,7 @@ function draw(speed)
 		cosAngle = -Math.cos(angle);
 
 		if (i % 5 == 0) {
-		context.lineWidth = 8;
+		context.lineWidth = 2;
 		iPointX = sineAngle *(radius -radius/4);
 		iPointY = cosAngle *(radius -radius/4);
 		oPointX = sineAngle *(radius -radius/7);
@@ -43,11 +43,13 @@ function draw(speed)
 
 		wPointX = sineAngle *(radius -radius/2.5);
 		wPointY = cosAngle *(radius -radius/2.5);
-		context.fillText((i+18)*increment,wPointX-2,wPointY+4);
+		// context.fillStyle = "#2195B2"
+		// //(i+18)*increment
+		// context.fillText((i+18)*increment,wPointX-15,wPointY+4);
 		}
 		else
 		{
-		context.lineWidth = 2; 			
+		context.lineWidth = 1; 			
 		iPointX = sineAngle *(radius -radius/5.5);
 		iPointY = cosAngle *(radius -radius/5.5);
 		oPointX = sineAngle *(radius -radius/7);
@@ -68,13 +70,13 @@ function draw(speed)
 	pointY = cosAngle *(3/4*radius);
 
 	context.beginPath();
-	context.strokeStyle = '#000000';
+	context.strokeStyle = '#FF8978';
 	context.arc(0, 0, 19, 0, 2*Math.PI, true);
 	context.fill();
         context.closePath();
 
 	context.beginPath();    	
-	context.lineWidth=6;
+	context.lineWidth=3;
 	context.moveTo(0,0);
         context.lineTo(pointX,pointY);
         context.stroke();
