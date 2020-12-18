@@ -11,7 +11,8 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "electron": "^11.1.0"
+    "electron": "^11.1.0",
+    "jquery": "^3.5.1"
   },
   "repository": {
     "type": "git",
