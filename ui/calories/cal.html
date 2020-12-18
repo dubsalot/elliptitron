@@ -1,0 +1,17 @@
+<body onload="draw(120);">
+    <div>
+        Change the speed in the dropdown to see the dial position change
+        <select id="myList" onchange="redraw();">
+            <option value="120">Speed = 120</option>
+            <option value="30">Speed = 30</option>
+            <option value="50">Speed = 50</option>
+            <option value="60">Speed = 60</option>
+            <option value="140">Speed = 140</option>
+            <option value="160">Speed = 160</option>
+        </select>
+    </div>
+    <canvas class="canvas" id="myCanvas" width="600" height="600">
+        Your browser does not support the HTML5 canvas tag.</canvas>
+</body>
+
+</html>
