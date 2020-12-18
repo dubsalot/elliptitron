@@ -14,7 +14,7 @@
 </head>
 <body">
     <h1 class="wrapper-header">Elliptitron</h1>
-    <!-- <button id="btn">test</button> -->
+    <button id="btn">test</button>
     <div class="wrapper">
       <div class="gauge">
         <div class="slice-colors">
@@ -31,32 +31,7 @@
 </body>
 
 <script type="text/javascript">
-    $(document).ready(function(){
-        let degrees = 0;
-        let needle = $(".needle").first();
-        $('#btn').click(function(){
-            if (degrees >= 179)
-            {
-                degrees = 0;
-            }
-            else { 
-                degrees += 3;
-            }
-            needle.css("transform", "rotate(" + degrees.toString() + "deg)");
-           console.log("hello");
-        });
 
-        setInterval(() => {
-            if (degrees >= 179)
-            {
-                degrees = 0;
-            }
-            else { 
-                degrees += 5;
-            }
-            needle.css("transform", "rotate(" + degrees.toString() + "deg)");            
-        }, 500);
-    });
 </script>
 </html>
 
