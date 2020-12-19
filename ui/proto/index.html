@@ -15,35 +15,37 @@
 	</script>
 	<link href="css/speedometer.css" rel="stylesheet" type="text/css" />
 	<script src="../node_modules/jquery/dist/jquery.min.js"></script>
+	<!-- <script src="../node_modules/jquery-ui/ui/core.js"></script> -->
+	<script src="../node_modules/jquery-ui/ui/widget.js"></script>
 	<script src="js/speedometer.js"></script>
 </head>
 
 <body>
 
-	<div class="grid-container">
-		<div class="item1">
-			<span id="myValues2" />
-		</div>
-		<!-- <div class="item2">2</div>
-		<div class="item3">3</div>
-		<div class="item4">4</div>
-		<div class="item5">5</div>
-		<div class="item6">6</div>
-		<div class="item7">7</div> -->
-		<div class="item8">
-			<span id="myValues" />
-		</div>
+	<button id="mv">move</button>
+	<div class="flex-container">
+		<div class="flex-item-left"><input id="myValues2" /></div>
+		<div class="flex-item-right"><input id="myValues" value="10" /></div>
 	</div>
 
-	
-
-	<br>
-
+	<div id="test"></div>
 </body>
-<script src="js/speedometer.js"></script>
+
 <script type="text/javascript">
+	$("#myValues").myfunc({ divFact: 10, eventListenerType: 'keyup' });
 
-
+	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "R", noOfSmallDiv: 2 };
+	
+	var x = $("#myValues2").myfunc(prefs);
+	console.log(x,"herro");
+	var speed = 1;
+	var thing = $("<div />").appendTo("body").speedo();
+	$('#mv').click(function(){
+		//var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "R", noOfSmallDiv: 2 };
+		thing.speedo( "divFact", 50 );
+		speed += 2;
+		x.changePosition(speed);
+	});
 	// maxVal              : 180,         /**Max value of the meter*/
 	//     divFact             : 10,          /**Division value of the meter*/
 	//     dangerLevel         : 120,         /**more than this leval, color will be red*/
@@ -66,10 +68,7 @@
 	//     eventListenerType   : 'change',    /**type of event listener*/
 	//     multiplier          : 1,	       /**Center value multiplier e.g. 1 x 1000 RPM*/	
 	//     gagueLabel   	: 'km/h'       /**Label on guage Face*/	
-	$("#myValues").myfunc({ divFact: 10, eventListenerType: 'keyup' });
 
-	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "R", noOfSmallDiv: 2 };
-	$("#myValues2").myfunc(prefs);
 </script>
 
 </html>

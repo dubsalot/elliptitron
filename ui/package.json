@@ -17,5 +17,8 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/dubsalot/elliptitron.git"
+  },
+  "dependencies": {
+    "jquery-ui": "^1.12.1"
   }
 }
