@@ -14,81 +14,71 @@
   <script src="../node_modules/jquery/dist/jquery.min.js"></script>
 </head>
 <body">
-  <button id="btn2">test</button>
-  <input type="text" id="txt" value="1000" />
+  <!-- <button id="btn2">test</button>
+  <input type="text" id="txt" value="1000" /> -->
   <canvas id="canvas" width="400" height="400"></canvas>
   <script>
-    var canvas = document.getElementById("canvas");
-    var ctx = canvas.getContext("2d");
-    var radius = canvas.width / 2;
-    ctx.translate(radius, radius);
-    radius = radius * 0.90
-    var min = 0;
-    var max = 100;
+    var canvas = document.getElementById('canvas');
+    var ctx = canvas.getContext('2d');
+    ctx.strokeStyle = '#28d1fa';
 
-    parseInt($("#txt").val(50));
-    drawGauge(radius, min, max, max/2, ctx);
+    ctx.strokeStyle = '#28d1fa';
 
-    $("#btn2").click(function () {
-      drawGauge(radius, min, max, parseInt($("#txt").val()), ctx);
-    });
+    ctx.lineWidth = 17;
+    ctx.lineCap = 'round';
+    ctx.shadowBlur = 15;
+    ctx.shadowColor = '#28d1fa';
 
-    function drawGauge(radius, minVal, maxVal, currentVal, ctx) {
-      if (isNaN(minVal) || isNaN(maxVal) || isNaN(currentVal) || isNaN(radius)) {
-        throw `radius, minVal, maxVal, and currentVal all must be numbers`;
-      }
-      if (currentVal < minVal || currentVal > maxVal || maxVal == minVal) {
-        throw `currentVal must be between ${minVal} and ${maxVal}. currentVal: ${currentVal}. minVal and maxVal can't be the same as that would be dividing by zero`;
-      }
-
-      var pct = (currentVal / (maxVal - minVal));
-      var radianscount = 1000.00;  // the higher the number, the more precise the gauge is. also higher number = smoother animation 
-      var maxrad = radianscount * .3;
-      var minrad = radianscount * .7;
-      var radiansInGauge = radianscount - (minrad - maxrad);
-      var position = pct == .5 ? maxrad + minrad : pct > .5 ? (radiansInGauge * (pct - .5)) : radianscount - (radiansInGauge * (.5 - pct));  // <--  kill me for this.
-
-      drawFace(ctx, radius);
-      drawNeedle(ctx, position * Math.PI / (radianscount / 2), radius * 0.9, radius * .02);
+    function degToRad(degree) {
+      var factor = Math.PI / 180;
+      return degree * factor;
     }
-    function drawFace(ctx, radius) {
+    var i = 139;
+
+    function renderTime() {
+
+      var now = new Date();
+      var today = now.toDateString();
+      var time = now.toLocaleTimeString();
+      var hours = now.getHours();
+
+
+      // Background
+      gradient = ctx.createRadialGradient(200, 200, 5, 200, 200, 300);
+      gradient.addColorStop(0, '#09303a');
+      gradient.addColorStop(1, '#000000');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, 400, 400);
+
+      i++;
+      if(i > 350)
+      {
+        i = 139;
+      }
       ctx.beginPath();
-      //0 == 3:00
-      // 0.5 Math.PI == 6:00      
-      // 1.0 Math.PI: == 9:00
-      // 1.5 Math.PI == 12:00
-      ctx.arc(0, 0, radius, Math.PI, 0);  // <- half face
-      ctx.arc(0, 0, radius, Math.PI * 0.9, Math.PI * 0.1);  // <- half face
-      ctx.fillStyle = 'white';
-      ctx.fill();
-    }
-    function drawNeedle(ctx, pos, length, width) {
-      ctx.beginPath();
-      ctx.lineWidth = width;
-      ctx.lineCap = "round";
-      ctx.moveTo(0, 0);
-      ctx.rotate(pos);
-      ctx.lineTo(0, -length);
+      ctx.arc(200, 200, 180, degToRad(140), degToRad(i));
       ctx.stroke();
-      ctx.rotate(-pos);
+
+      // Minutes
+      // ctx.beginPath();
+      // ctx.arc(200, 200, 140, degToRad(270), degToRad((minutes * 6) - 90));
+      // ctx.stroke();
+      // // Seconds
+      // ctx.beginPath();
+      // ctx.arc(200, 200, 110, degToRad(270), degToRad((newSeconds * 6) - 90));
+      // ctx.stroke();
+      // Date 
+      ctx.font = "60px Helvetica";
+      ctx.fillStyle = '#28d1fa';
+      ctx.fillText("6.87", 140, 200);
+
+      // Time
+      ctx.font = "15px Helvetica";
+      ctx.fillStyle = '#28d1fa';
+      ctx.fillText("MPH", 140, 230);
+
     }
-    function drawNumbers(ctx, radius) {
-      var ang;
-      var num;
-      ctx.font = radius * 0.15 + "px arial";
-      ctx.textBaseline = "middle";
-      ctx.textAlign = "center";
-      for (num = 1; num < 13; num++) {
-        ang = num * Math.PI / 6;
-        ctx.rotate(ang);
-        ctx.translate(0, -radius * 0.85);
-        ctx.rotate(-ang);
-        ctx.fillText(num.toString(), 0, 0);
-        ctx.rotate(ang);
-        ctx.translate(0, radius * 0.85);
-        ctx.rotate(-ang);
-      }
-    }
+    setInterval(renderTime, 40);
   </script>
   </body>
 
