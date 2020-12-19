@@ -23,13 +23,22 @@
 <body>
 
 	<button id="mv">move</button>
+	<button id="ts">test</button>
 	<div class="flex-container">
 		<div class="flex-item-left">
 			<div id="speedo" />
+			<div id="speedlabel" class="extlabel">
+				<div class="indlabel"></div>
+				<div class="inddescrip">Calories/Minute</div>
+			</div>
 		</div>
 	</div>
 	<div class="flex-item-right">
 		<div id="resmeter" />
+		<div id="reslabel" class="extlabel">
+			<div class="indlabel"></div>
+			<div class="inddescrip">Resistance</div>
+		</div>
 	</div>
 	</div>
 	</div>
@@ -39,21 +48,67 @@
 
 <script type="text/javascript">
 
-	var speedprefs = { maxVal: 30, divFact: 1, dangerLevel: 12, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280,indicatorNumbRadius: 200, speedPositionTxtWH: 5}
-	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280,indicatorNumbRadius: 200, speedPositionTxtWH: 5};
-	
+	var speedprefs = { maxVal: 30, divFact: 1, dangerLevel: 22, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280, indicatorNumbRadius: 200, speedPositionTxtWH: 5 }
+	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 22, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280, indicatorNumbRadius: 200, speedPositionTxtWH: 5 };
+
+	var slabel = $(".indlabel", $("#speedlabel"));
+	var rlabel = $(".indlabel", $("#reslabel"));
 
 	var resmeter = $("#resmeter").myfunc(prefs);
 	var speedmeter = $("#speedo").myfunc(speedprefs);
 
 	var speed = 1;
 	var resistance = 1;
+
 	$('#mv').click(function () {
 		speed += 5;
 		resistance += 1;
 		speedmeter.changePosition(speed);
 		resmeter.changePosition(resistance);
+
+		$(rlabel).text(resistance);
+		$(slabel).text(speed);
+
+
 	});
+	rdown = false;
+	sdown = false;
+	$('#ts').click(function () {
+		setInterval(() => {
+			if (rdown) {
+				resistance -= 0.21;
+			}
+			else {
+				resistance += 0.21;
+			}
+			if (sdown) {
+				speed -= 0.53;
+			}
+			else {
+				speed += 0.53;
+			}
+
+			if (speed > 30) {
+				sdown = true;
+			}
+			if (speed <= 0) {
+				sdown = false;
+			}
+
+			if (resistance > 25) {
+				rdown = true;
+			}
+			if (resistance <= 0) {
+				rdown = false;
+			}
+			speedmeter.changePosition(speed);
+			resmeter.changePosition(resistance);
+
+			$(rlabel).text(Math.round(resistance,0));
+			$(slabel).text(Math.round(speed,2));
+		}, 250);
+	});
+
 	// maxVal              : 180,         /**Max value of the meter*/
 	//     divFact             : 10,          /**Division value of the meter*/
 	//     dangerLevel         : 120,         /**more than this leval, color will be red*/
