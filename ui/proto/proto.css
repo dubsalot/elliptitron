@@ -1,9 +1,9 @@
 #btn { 
-  display:block;
-  width:200px;
-  height:100px;
-  background-color: #cccccc;
+  padding:10px;
   color:blue;
+  background: rgba(21, 34, 46, 0.25);
+  border: none;
+  color: #fff;
 }
 body {
     background: #4535AD;
@@ -33,7 +33,7 @@ body {
     animation: simplePulse ease-in-out 1.1s infinite;
   }
   
-  .gauge {
+  .proto {
     font-family: Arial, Helvetica, sans-serif;
     background: #e7e7e7;
     box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.09), 0 0 35px 5px rgba(255, 255, 255, 0.29);
@@ -46,11 +46,11 @@ body {
     transform-style: flat;
     transform: translateZ(0px);
   }
-  .gauge.min-scaled {
+  .proto.min-scaled {
     transform: scale(0.5);
   }
   
-  .gauge-center {
+  .proto-center {
     content: '';
     color: #fff;
     width: 60%;
@@ -63,7 +63,7 @@ body {
     bottom: 0;
     color: #fff;
   }
-  .gauge-center::before {
+  .proto-center::before {
     font-size: 1.5em;
     width: 100%;
     padding: 10px 0 0 0;
@@ -72,7 +72,7 @@ body {
     -webkit-font-smoothing: antialiased;
     font-smooth: always;
   }
-  .gauge-center::after {
+  .proto-center::after {
     content: '';
     width: 100%;
     float: left;
