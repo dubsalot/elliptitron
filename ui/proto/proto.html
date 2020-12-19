@@ -20,12 +20,13 @@
   <script>
     var i = 0;
     var max = 25;
+    var last = null;
     function renderTime() {
 
       if (i > max) {
         i = 1;
       }
-      Meter((i / max * 100), i, "Resistance", "canvas");
+      last = Meter((i / max * 100), last, i, "Resistance", "canvas");
       i++;
     }
     setInterval(renderTime, 200);
