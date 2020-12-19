@@ -23,51 +23,41 @@
     var ctx = canvas.getContext("2d");
     var radius = canvas.width / 2;
     ctx.translate(radius, radius);
-    radius = radius * 0.90    
+    radius = radius * 0.90
 
     $("#btn2").click(function () {
-      //setInterval(speed, 100);
-      drawFace(ctx, radius);
-      //drawNumbers(ctx, radius);  
-      
-      //         left    center top     right
-      // range = 700 ... 1000...        300
-      var where = 300 * Math.PI / 500;
-      var lefthandwhere = 700 * Math.PI / 500;
-      console.log(i);
-
-      drawGauge(radius, 0, 100,  parseInt($("#txt").val()), ctx);
-      
-      // drawHand(ctx, where, radius * 0.9, radius * 0.02);      
-      // drawHand(ctx, lefthandwhere, radius * 0.9, radius * 0.02);      
-      // drawHand(ctx, parseInt($("#txt").val()) * Math.PI / 500, radius * 0.9, radius * 0.02);      
+      drawGauge(radius, 0, 100, parseInt($("#txt").val()), ctx);
     });
 
     function drawGauge(radius, minVal, maxVal, currentVal, ctx) {
-      var pct = (currentVal / maxVal);
-//      var position = pct == .5 ? 1000 : pct < 1000 ? 1000 - (600 * pct) : 1000 + (600 * pct)
 
-      if(isNaN(minVal) || isNaN(maxVal) || isNaN(currentVal) || isNaN(radius))
-      {
+
+      if (isNaN(minVal) || isNaN(maxVal) || isNaN(currentVal) || isNaN(radius)) {
         throw `radius, minVal, maxVal, and currentVal all must be numbers`;
       }
-      if(currentVal < minVal || currentVal > maxVal)
-      {
-        throw `currentVal must be between ${minVal} and ${maxVal}. currentVal: ${currentVal}`;
+      if (currentVal < minVal || currentVal > maxVal || maxVal == minVal) {
+        throw `currentVal must be between ${minVal} and ${maxVal}. currentVal: ${currentVal}. minVal and maxVal can't be the same as that would be dividing by zero`;
       }
 
-      var radians = 1000;  // the higher the number, the more precise the gauge is. also higher number = smoother animation 
-      var maxrad = radians * .3;
-      var minrad = radians * .7;
-      var position = pct == .5 ? 1000 : pct > .5 ? 300 * pct : 700  + (300 * pct);  // <--  kill me for this.
+      var pct = (currentVal.toFixed(2) / (maxVal.toFixed(2) - minVal.toFixed(2)));
+      var radianscount = 1000.00;  // the higher the number, the more precise the gauge is. also higher number = smoother animation 
+      var maxrad = radianscount * .3;
+      var minrad = radianscount * .7;
+      var radiansInGauge = radianscount - (minrad - maxrad);
+      var position = pct == .5 ?  maxrad + minrad : pct > .5 ? (radiansInGauge * (pct - .5)) : radianscount - (radiansInGauge * (.5 - pct));  // <--  kill me for this.
+      drawFace(ctx, radius);
+      drawNeedle(ctx, position * Math.PI / (radianscount / 2), radius * 0.9, radius * .02);
+    }
 
-      console.log(position, "position");
-      console.log(pct, "pct");
-      console.log(currentVal, "currentVal");
-      console.log(minVal, "minVal");
-      console.log(maxVal, "maxVal");
-      console.log(adjustment, "adjustment");
-      drawHand(ctx, position * Math.PI / 500, radius * 0.9, radius *.02);
+    function drawNeedle(ctx, pos, length, width) {
+      ctx.beginPath();
+      ctx.lineWidth = width;
+      ctx.lineCap = "round";
+      ctx.moveTo(0, 0);
+      ctx.rotate(pos);
+      ctx.lineTo(0, -length);
+      ctx.stroke();
+      ctx.rotate(-pos);
     }
 
     //drawClock();
@@ -153,7 +143,7 @@
 
 
     function drawHand(ctx, pos, length, width) {
-     // console.log(pos);
+      // console.log(pos);
       ctx.beginPath();
       ctx.lineWidth = width;
       ctx.lineCap = "round";
