@@ -17,9 +17,9 @@ $.fn.myfunc = function (userPref) {
     speedNobeH: 4,           /**speed nobe height*/
     speedoNobeW: 95,          /**speed nobe width*/
     speedoNobeL: 13,          /**speed nobe left position*/
-    indicatorRadius: 125,         /**radius of indicators position*/
-    indicatorNumbRadius: 90,          /**radius of numbers position*/
-    speedPositionTxtWH: 80,          /**speedo-meter current value cont*/
+    indicatorRadius: 280,         /**radius of indicators position*/
+    indicatorNumbRadius: 200,          /**radius of numbers position*/
+    speedPositionTxtWH: 250,          /**speedo-meter current value cont*/
     nobW: 20,          /**indicator nob width*/
     nobH: 4,           /**indicator nob height*/
     numbW: 30,          /**indicator number width*/
@@ -29,7 +29,7 @@ $.fn.myfunc = function (userPref) {
     noOfSmallDiv: 2,           /**no of small div between main div*/
     eventListenerType: 'change',    /**type of event listener*/
     multiplier: 1,	       /**Center value multiplier e.g. 1 x 1000 RPM*/
-    gagueLabel: 'km/h'       /**Label on guage Face*/
+    gagueLabel: 'speed'       /**Label on guage Face*/
   }
 
   if (typeof userPref === 'object')
@@ -150,7 +150,7 @@ $.fn.myfunc = function (userPref) {
   }
   this.changePosition = function (newspeed) {
 
-    console.log(newspeed)
+    console.debug(newspeed, `new speed is ${newspeed}`)
     var speed = newspeed;
     if (speed > self.defaultProperty.maxVal) {
       speed = self.defaultProperty.maxVal;
@@ -167,8 +167,8 @@ $.fn.myfunc = function (userPref) {
       "-o-transform": 'rotate(' + speedInDeg + 'deg)'
     });
 
-    var centerVal = speed * self.defaultProperty.multiplier;
-    self.find(".speedPosition").html(centerVal + "<br />" + self.defaultProperty.gagueLabel);
+    // var centerVal = speed * self.defaultProperty.multiplier;
+    // self.find(".speedPosition").html(`<div class="centerlabel">${centerVal}</div><br /><div class="meterlabel">${self.defaultProperty.gagueLabel}</div>`);
 
     self.find(".envelope .nob,.envelope .numb").removeClass("bright");
     for (var i = 0; i <= noOfDev; i++) {
@@ -189,9 +189,5 @@ $.fn.myfunc = function (userPref) {
   // this.prototype.UpdateSpeed = function () {
   //   console.log("update");
   // };
-  return this;
-}
-$.fn.myfunc.changeSpeed = function (params) {
-  console.log("change");
   return this;
 }

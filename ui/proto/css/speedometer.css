@@ -5,7 +5,7 @@
   .flex-container {
 	display: flex;
 	flex-wrap: wrap;
-	font-size: 30px;
+	font-size: 20px;
 	text-align: center;
   }
   
@@ -85,9 +85,9 @@ body {
 	position: absolute;
 	color: #fff;
 	text-align: center;
-	line-height: 80px;
-	font-family: arial;
-	font-size: 30px;
+	/* line-height: 4em; */
+	font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+	font-size: 5em;
 	font-weight: bold;
 	border-radius: 50%;
 	-webkit-border-radius: 50%;
@@ -99,6 +99,12 @@ body {
 	-moz-box-shadow: 0 0 3px 3px black;
 	-o-box-shadow: 0 0 3px 3px black;
 }
+.centerlabel {top: 50px; position:absolute; left:75px}
+.meterlabel { 
+	font-size: 0.3em;
+	left: 6px;
+}
+
 .fonts {
 	font-family: arial;
 	font-weight: bold;
