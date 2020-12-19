@@ -18,67 +18,17 @@
   <input type="text" id="txt" value="1000" /> -->
   <canvas id="canvas" width="400" height="400"></canvas>
   <script>
-    var canvas = document.getElementById('canvas');
-    var ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#28d1fa';
-
-    ctx.strokeStyle = '#28d1fa';
-
-    ctx.lineWidth = 17;
-    ctx.lineCap = 'round';
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#28d1fa';
-
-    function degToRad(degree) {
-      var factor = Math.PI / 180;
-      return degree * factor;
-    }
-    var i = 139;
-
+    var i = 0;
+    var max = 25;
     function renderTime() {
 
-      var now = new Date();
-      var today = now.toDateString();
-      var time = now.toLocaleTimeString();
-      var hours = now.getHours();
-
-
-      // Background
-      gradient = ctx.createRadialGradient(200, 200, 5, 200, 200, 300);
-      gradient.addColorStop(0, '#09303a');
-      gradient.addColorStop(1, '#000000');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, 400, 400);
-
-      i++;
-      if(i > 350)
-      {
-        i = 139;
+      if (i > max) {
+        i = 1;
       }
-      ctx.beginPath();
-      ctx.arc(200, 200, 180, degToRad(140), degToRad(i));
-      ctx.stroke();
-
-      // Minutes
-      // ctx.beginPath();
-      // ctx.arc(200, 200, 140, degToRad(270), degToRad((minutes * 6) - 90));
-      // ctx.stroke();
-      // // Seconds
-      // ctx.beginPath();
-      // ctx.arc(200, 200, 110, degToRad(270), degToRad((newSeconds * 6) - 90));
-      // ctx.stroke();
-      // Date 
-      ctx.font = "60px Helvetica";
-      ctx.fillStyle = '#28d1fa';
-      ctx.fillText("6.87", 140, 200);
-
-      // Time
-      ctx.font = "15px Helvetica";
-      ctx.fillStyle = '#28d1fa';
-      ctx.fillText("MPH", 140, 230);
-
+      Meter((i / max * 100), i, "Resistance", "canvas");
+      i++;
     }
-    setInterval(renderTime, 40);
+    setInterval(renderTime, 200);
   </script>
   </body>
 
