@@ -148,6 +148,7 @@ $.fn.myfunc = function (userPref) {
 
     this.find(".envelope").append(speedNobe + tempDiv);
   }
+  var speednobe;
   this.changePosition = function (newspeed) {
 
     console.debug(newspeed, `new speed is ${newspeed}`)
@@ -159,8 +160,13 @@ $.fn.myfunc = function (userPref) {
       speed = 0;
     }
     speedInDeg = (self.defaultProperty.maxDeg / self.defaultProperty.maxVal) * speed + self.defaultProperty.initDeg;
+    if(!speednobe)
+    {
+      speednobe = self.find(".speedNobe").first();
+      console.log(speed, "SPEED NODE");
+    }
 
-    self.find(".speedNobe").css({
+    speednobe.css({
       "-webkit-transform": 'rotate(' + speedInDeg + 'deg)',
       "-webkit-transform": 'rotate(' + speedInDeg + 'deg)',
       "-moz-transform": 'rotate(' + speedInDeg + 'deg)',
@@ -170,15 +176,15 @@ $.fn.myfunc = function (userPref) {
     // var centerVal = speed * self.defaultProperty.multiplier;
     // self.find(".speedPosition").html(`<div class="centerlabel">${centerVal}</div><br /><div class="meterlabel">${self.defaultProperty.gagueLabel}</div>`);
 
-    self.find(".envelope .nob,.envelope .numb").removeClass("bright");
-    for (var i = 0; i <= noOfDev; i++) {
-      if (speed >= i * self.defaultProperty.divFact) {
-        self.find(".envelope .nob").eq(i).addClass("bright");
-        self.find(".envelope .numb").eq(i).addClass("bright");
-      } else {
-        break;
-      }
-    }
+    // self.find(".envelope .nob,.envelope .numb").removeClass("bright");
+    // for (var i = 0; i <= noOfDev; i++) {
+    //   if (speed >= i * self.defaultProperty.divFact) {
+    //     self.find(".envelope .nob").eq(i).addClass("bright");
+    //     self.find(".envelope .numb").eq(i).addClass("bright");
+    //   } else {
+    //     break;
+    //   }
+    // }
   }
   this.creatHtmlsElecments();
   $(this).bind(this.defaultProperty.eventListenerType, this.changePosition);
