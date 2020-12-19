@@ -86,7 +86,7 @@ $.fn.myfunc = function (userPref) {
       '}',
       '</style>',
     ].join('');
-    this.parentElem.append(tempStyleVar);
+    this.append(tempStyleVar);
   }
   this.creatHtmlsElecments = function () {
     this.parentElemId = 'speedometerWraper-' + $(this).attr('id');
@@ -135,7 +135,7 @@ $.fn.myfunc = function (userPref) {
         tempDiv += '<div class="numb"></div>';
       }
     }
-    this.parentElem.append('<div class="envelope">');
+    this.append('<div class="envelope">');
 
     // var speedNobe = [
     //   '<div class="speedNobe">',
@@ -146,7 +146,7 @@ $.fn.myfunc = function (userPref) {
     var speedNobe = '<div class="speedNobe"><div></div></div><div class="speedPosition"></div>'
     console.log(speedNobe, "speedNobe");
 
-    this.parentElem.find(".envelope").append(speedNobe + tempDiv);
+    this.find(".envelope").append(speedNobe + tempDiv);
   }
   this.changePosition = function (newspeed) {
 
@@ -160,7 +160,7 @@ $.fn.myfunc = function (userPref) {
     }
     speedInDeg = (self.defaultProperty.maxDeg / self.defaultProperty.maxVal) * speed + self.defaultProperty.initDeg;
 
-    self.parentElem.find(".speedNobe").css({
+    self.find(".speedNobe").css({
       "-webkit-transform": 'rotate(' + speedInDeg + 'deg)',
       "-webkit-transform": 'rotate(' + speedInDeg + 'deg)',
       "-moz-transform": 'rotate(' + speedInDeg + 'deg)',
@@ -168,13 +168,13 @@ $.fn.myfunc = function (userPref) {
     });
 
     var centerVal = speed * self.defaultProperty.multiplier;
-    self.parentElem.find(".speedPosition").html(centerVal + "<br />" + self.defaultProperty.gagueLabel);
+    self.find(".speedPosition").html(centerVal + "<br />" + self.defaultProperty.gagueLabel);
 
-    self.parentElem.find(".envelope .nob,.envelope .numb").removeClass("bright");
+    self.find(".envelope .nob,.envelope .numb").removeClass("bright");
     for (var i = 0; i <= noOfDev; i++) {
       if (speed >= i * self.defaultProperty.divFact) {
-        self.parentElem.find(".envelope .nob").eq(i).addClass("bright");
-        self.parentElem.find(".envelope .numb").eq(i).addClass("bright");
+        self.find(".envelope .nob").eq(i).addClass("bright");
+        self.find(".envelope .numb").eq(i).addClass("bright");
       } else {
         break;
       }
@@ -195,70 +195,3 @@ $.fn.myfunc.changeSpeed = function (params) {
   console.log("change");
   return this;
 }
-
-
-
-$.widget("dubsalot.speedo", {
-  options: {
-    maxVal: 180,         /**Max value of the meter*/
-    divFact: 10,          /**Division value of the meter*/
-    dangerLevel: 120,         /**more than this leval, color will be red*/
-    initDeg: -45,         /**reading begins angle*/
-    maxDeg: 270,         /**total angle of the meter reading*/
-    edgeRadius: 150,         /**radius of the meter circle*/
-    speedNobeH: 4,           /**speed nobe height*/
-    speedoNobeW: 95,          /**speed nobe width*/
-    speedoNobeL: 13,          /**speed nobe left position*/
-    indicatorRadius: 125,         /**radius of indicators position*/
-    indicatorNumbRadius: 90,          /**radius of numbers position*/
-    speedPositionTxtWH: 80,          /**speedo-meter current value cont*/
-    nobW: 20,          /**indicator nob width*/
-    nobH: 4,           /**indicator nob height*/
-    numbW: 30,          /**indicator number width*/
-    numbH: 16,          /**indicator number height*/
-    midNobW: 10,          /**indicator mid nob width*/
-    midNobH: 3,           /**indicator mid nob height*/
-    noOfSmallDiv: 2,           /**no of small div between main div*/
-    eventListenerType: 'change',    /**type of event listener*/
-    multiplier: 1,	       /**Center value multiplier e.g. 1 x 1000 RPM*/
-    gagueLabel: 'km/h'       /**Label on guage Face*/
-  },
-
-  _create: function () {
-    var progress = this.options.divFact + " mph";
-    this.element.addClass("progressbar").text(progress);
-  },
-
-  // Create a public method.
-  divFact: function (divFact) {
-
-    // No value passed, act as a getter.
-    if (divFact === undefined) {
-
-      return this.options.divFact;
-
-      // Value passed, act as a setter.
-    } else {
-
-      this.options.divFact = this._constrain(divFact);
-      var progress = this.options.divFact + " mph";
-      this.element.text(progress);
-
-    }
-
-  },
-
-  // Create a private method.
-  _constrain: function (divFact) {
-
-    if (divFact > 110) {
-      divFact = 110;
-    }
-
-    if (divFact < 0) {
-      divFact = 5;
-    }
-
-    return divFact;
-  }
-});

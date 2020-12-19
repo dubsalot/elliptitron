@@ -24,27 +24,34 @@
 
 	<button id="mv">move</button>
 	<div class="flex-container">
-		<div class="flex-item-left"><input id="myValues2" /></div>
-		<div class="flex-item-right"><input id="myValues" value="10" /></div>
+		<div class="flex-item-left">
+			<div id="speedo" />
+		</div>
+	</div>
+	<div class="flex-item-right">
+		<div id="resmeter" />
+	</div>
+	</div>
 	</div>
 
 	<div id="test"></div>
 </body>
 
 <script type="text/javascript">
-	$("#myValues").myfunc({ divFact: 10, eventListenerType: 'keyup' });
+
 
 	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "R", noOfSmallDiv: 2 };
-	
-	var x = $("#myValues2").myfunc(prefs);
-	console.log(x,"herro");
+	var resmeter = $("#resmeter").myfunc(prefs);
+
+	var speedmeter = $("#speedo").myfunc({ divFact: 10 });
+
 	var speed = 1;
-	var thing = $("<div />").appendTo("body").speedo();
-	$('#mv').click(function(){
-		//var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "R", noOfSmallDiv: 2 };
-		thing.speedo( "divFact", 50 );
-		speed += 2;
-		x.changePosition(speed);
+	var resistance = 1;
+	$('#mv').click(function () {
+		speed += 5;
+		resistance += 1;
+		speedmeter.changePosition(speed);
+		resmeter.changePosition(resistance);
 	});
 	// maxVal              : 180,         /**Max value of the meter*/
 	//     divFact             : 10,          /**Division value of the meter*/
