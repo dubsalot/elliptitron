@@ -76,16 +76,16 @@
 	$('#ts').click(function () {
 		setInterval(() => {
 			if (rdown) {
-				resistance -= 0.21;
+				resistance -= 2;
 			}
 			else {
-				resistance += 0.21;
+				resistance += 2;
 			}
 			if (sdown) {
-				speed -= 0.53;
+				speed -= 3;
 			}
 			else {
-				speed += 0.53;
+				speed += 3;
 			}
 
 			if (speed > 30) {
@@ -106,7 +106,7 @@
 
 			$(rlabel).text(Math.round(resistance,0));
 			$(slabel).text(Math.round(speed,2));
-		}, 250);
+		}, 1000);
 	});
 
 	// maxVal              : 180,         /**Max value of the meter*/
