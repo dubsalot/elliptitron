@@ -15,18 +15,61 @@
 </head>
 <body">
   <button id="btn2">test</button>
-  <canvas id="canvas" width="400" height="400" style="background-color:#333"></canvas>
+  <input type="text" id="txt" value="1000" />
+  <canvas id="canvas" width="200" height="133" style="background-color:#333"></canvas>
   <script>
+
     var canvas = document.getElementById("canvas");
     var ctx = canvas.getContext("2d");
-    
+    var radius = canvas.width / 2;
+    ctx.translate(radius, radius);
+    radius = radius * 0.90    
+
     $("#btn2").click(function () {
-      setInterval(speed, 10);
+      //setInterval(speed, 100);
+      drawFace(ctx, radius);
+      //drawNumbers(ctx, radius);  
+      
+      //         left    center top     right
+      // range = 700 ... 1000...        300
+      var where = 300 * Math.PI / 500;
+      var lefthandwhere = 700 * Math.PI / 500;
+      console.log(i);
+
+      drawGauge(radius, 0, 100,  parseInt($("#txt").val()), ctx);
+      
+      // drawHand(ctx, where, radius * 0.9, radius * 0.02);      
+      // drawHand(ctx, lefthandwhere, radius * 0.9, radius * 0.02);      
+      // drawHand(ctx, parseInt($("#txt").val()) * Math.PI / 500, radius * 0.9, radius * 0.02);      
     });
 
-    var radius = canvas.height / 2;
-    ctx.translate(radius, radius);
-    radius = radius * 0.90
+    function drawGauge(radius, minVal, maxVal, currentVal, ctx) {
+      var pct = (currentVal / maxVal);
+//      var position = pct == .5 ? 1000 : pct < 1000 ? 1000 - (600 * pct) : 1000 + (600 * pct)
+
+      if(isNaN(minVal) || isNaN(maxVal) || isNaN(currentVal) || isNaN(radius))
+      {
+        throw `radius, minVal, maxVal, and currentVal all must be numbers`;
+      }
+      if(currentVal < minVal || currentVal > maxVal)
+      {
+        throw `currentVal must be between ${minVal} and ${maxVal}. currentVal: ${currentVal}`;
+      }
+
+      var radians = 1000;  // the higher the number, the more precise the gauge is. also higher number = smoother animation 
+      var maxrad = radians * .3;
+      var minrad = radians * .7;
+      var position = pct == .5 ? 1000 : pct > .5 ? 300 * pct : 700  + (300 * pct);  // <--  kill me for this.
+
+      console.log(position, "position");
+      console.log(pct, "pct");
+      console.log(currentVal, "currentVal");
+      console.log(minVal, "minVal");
+      console.log(maxVal, "maxVal");
+      console.log(adjustment, "adjustment");
+      drawHand(ctx, position * Math.PI / 500, radius * 0.9, radius *.02);
+    }
+
     //drawClock();
 
     var i = 0;
@@ -38,8 +81,9 @@
         i++;
       }
       drawFace(ctx, radius);
-      drawNumbers(ctx, radius);      
+      //drawNumbers(ctx, radius);         <-- speed indicators
       var where = i * Math.PI / 500;
+      console.log(i);
       drawHand(ctx, where, radius * 0.9, radius * 0.02);
     }
     function drawClock() {
@@ -69,18 +113,25 @@
       var grad;
 
       ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+      //0 == 3:00
+      // 0.5 Math.PI == 6:00      
+      // 1.0 Math.PI: == 9:00
+      // 1.5 Math.PI == 12:00
+      ctx.arc(0, 0, radius, Math.PI, 0);  // <- half face
+
+      ctx.arc(0, 0, radius, Math.PI * 0.9, Math.PI * 0.1);  // <- half face
+
       ctx.fillStyle = 'white';
       ctx.fill();
 
 
-      ctx.lineWidth = radius * 0.02;
-      ctx.stroke();
+      // ctx.lineWidth = radius * 0.02;
+      // ctx.stroke();
 
-      ctx.beginPath();
-      ctx.arc(0, 0, radius * 0.1, 0, 2 * Math.PI);
-      ctx.fillStyle = '#333';
-      ctx.fill();
+      // ctx.beginPath();
+      // ctx.arc(0, 0, radius * 0.1, 0, 2 * Math.PI);
+      // ctx.fillStyle = '#333';
+      // ctx.fill();
     }
 
     function drawTime(ctx, radius) {
@@ -102,6 +153,7 @@
 
 
     function drawHand(ctx, pos, length, width) {
+     // console.log(pos);
       ctx.beginPath();
       ctx.lineWidth = width;
       ctx.lineCap = "round";
