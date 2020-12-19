@@ -55,7 +55,7 @@
 } */
 
 body {
-	background: #323C58;
+	background-image: radial-gradient(circle at 60%, #222, #222, #111);
 }
 
 .envelope {

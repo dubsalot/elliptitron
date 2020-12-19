@@ -13,7 +13,7 @@ $.fn.myfunc = function (userPref) {
     dangerLevel: 120,         /**more than this leval, color will be red*/
     initDeg: -45,         /**reading begins angle*/
     maxDeg: 270,         /**total angle of the meter reading*/
-    edgeRadius: 150,         /**radius of the meter circle*/
+    edgeRadius: 400,         /**radius of the meter circle*/
     speedNobeH: 4,           /**speed nobe height*/
     speedoNobeW: 95,          /**speed nobe width*/
     speedoNobeL: 13,          /**speed nobe left position*/

@@ -40,10 +40,11 @@
 <script type="text/javascript">
 
 
-	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "R", noOfSmallDiv: 2 };
-	var resmeter = $("#resmeter").myfunc(prefs);
+	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 20, gagueLabel: "resistance", noOfSmallDiv: 2 };
+	var speedprefs = { maxVal: 30, divFact: 1, dangerLevel: 12, gagueLabel: "mph", noOfSmallDiv: 2 }
 
-	var speedmeter = $("#speedo").myfunc({ divFact: 10 });
+	var resmeter = $("#resmeter").myfunc(prefs);
+	var speedmeter = $("#speedo").myfunc(speedprefs);
 
 	var speed = 1;
 	var resistance = 1;
