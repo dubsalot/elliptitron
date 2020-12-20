@@ -3,38 +3,52 @@
 
 <head>
   <meta charset="UTF-8">
-  <link rel="stylesheet" href="./proto.css">
-  <script src="./proto.js" type="text/javascript"></script>
+  <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+  <link rel="stylesheet" href="css/gauge.css">
+  <script src="js/gaugeface.js" type="text/javascript"></script>
   <script>
     window.nodeRequire = require;
     delete window.require;
     delete window.exports;
     delete window.module;        
   </script>
-  <script src="../node_modules/jquery/dist/jquery.min.js"></script>
+
 </head>
-<body">
-  <!-- <button id="btn2">test</button>
-  <input type="text" id="txt" value="1000" /> -->
-  <canvas id="canvas" width="400" height="400"></canvas>
+
+<body>
+  <button id="mv">move</button>
+  <button id="ts">test</button>
+  <div class="flex-container">
+    <div class="flex-item flex-item-left">
+      <div class="extlabel">0</div>
+      <div class="inddescrip">Calories/Minute</div>
+      <canvas id="calsPerMinute" width="400" height="400"></canvas>
+    </div>
+    <div class="flex-item flex-item-right">
+      <div class="extlabel">0</div>
+      <div class="inddescrip">MPH</div>
+      <canvas id="speed" width="400" height="400"></canvas>
+    </div>
+    <div class="flex-item">
+      <div id="meters">
+        <label for="resistance">RESISTANCE</label><br />
+        <meter id="resistance" value="0.6" max="1" min="0" style="width:500px; height:50px;">60%</meter>
+      </div>
+    </div>
+  </div>
   <script>
     var i = 0;
     var max = 25;
-    var last = null;
-
-    Meter((i / max * 100), last, i, "Resistance", "canvas")
-    // function renderTime() {
-
-    //   Meter((i / max * 100), last, i, "Resistance", "canvas")
-
-    //   if (i > max) {
-    //     i = 1;
-    //   }
-    //   last = Meter((i / max * 100), last, i, "Resistance", "canvas");
-    //   i++;
-    // }
-    setInterval(renderTime, 200);
+    Meter("calsPerMinute");
+    Meter("speed");
   </script>
-  </body>
+</body>
 
 </html>
+
+
+<!-- <div id="resmeter" />
+<div id="reslabel" class="extlabel">
+  <div class="indlabel"></div>
+  <div class="inddescrip">Resistance</div>
+</div> -->
