@@ -18,6 +18,38 @@
 	<!-- <script src="../node_modules/jquery-ui/ui/core.js"></script> -->
 	<script src="../node_modules/jquery-ui/ui/widget.js"></script>
 	<script src="js/speedometer.js"></script>
+
+	<style>
+		#one {
+			display: block;
+			background: white;
+			height: 400px;
+			width: 400px;
+			position: relative;
+		}
+
+		#dot {
+			position: absolute;
+			background-color: blue;
+			top: 50%;
+			left: 50%;
+			width: 2px;
+			height: 2px;
+		}
+
+		#needle {
+			position: absolute;
+			background-color: #ccc;
+			top: 50%;
+			left: 50%;
+			width: 1px;
+			height: 120px;
+			transform-origin: bottom center;
+			transform: rotate(-90deg);
+			font-size: .8em;
+			transition: transform 1s;
+		}
+	</style>
 </head>
 
 <body>
@@ -26,10 +58,9 @@
 	<button id="ts">test</button>
 	<div class="flex-container">
 		<div class="flex-item-left">
-			<div id="speedo" />
-			<div id="speedlabel" class="extlabel">
-				<div class="indlabel"></div>
-				<div class="inddescrip">Calories/Minute</div>
+			<div id="one">
+				<div id="needle">123</div>
+				<div id="dot"></div>
 			</div>
 		</div>
 	</div>
@@ -43,72 +74,53 @@
 	</div>
 	</div>
 
-	<div id="test"></div>
 </body>
 
 <script type="text/javascript">
 
-	var speedprefs = { maxVal: 30, divFact: 1, dangerLevel: 22, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280, indicatorNumbRadius: 200, speedPositionTxtWH: 5 }
-	var prefs = { maxVal: 26, divFact: 1, dangerLevel: 22, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280, indicatorNumbRadius: 200, speedPositionTxtWH: 5 };
+	// var speedprefs = { maxVal: 30, divFact: 1, dangerLevel: 22, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280, indicatorNumbRadius: 200, speedPositionTxtWH: 5 }
+	// var prefs = { maxVal: 26, divFact: 1, dangerLevel: 22, gagueLabel: "", noOfSmallDiv: 2, indicatorRadius: 280, indicatorNumbRadius: 200, speedPositionTxtWH: 5 };
 
-	var slabel = $(".indlabel", $("#speedlabel"));
-	var rlabel = $(".indlabel", $("#reslabel"));
+	// var slabel = $(".indlabel", $("#speedlabel"));
+	// var rlabel = $(".indlabel", $("#reslabel"));
 
-	var resmeter = $("#resmeter").myfunc(prefs);
-	var speedmeter = $("#speedo").myfunc(speedprefs);
+	// var resmeter = $("#resmeter").myfunc(prefs);
+	// var speedmeter = $("#speedo").myfunc(speedprefs);
 
 	var speed = 1;
 	var resistance = 1;
 
-	$('#mv').click(function () {
-		speed += 5;
-		resistance += 1;
-		speedmeter.changePosition(speed);
-		resmeter.changePosition(resistance);
+	// $('#mv').click(function () {
+	// 	speed += 5;
+	// 	resistance += 1;
+	// 	speedmeter.changePosition(speed);
+	// 	resmeter.changePosition(resistance);
 
-		$(rlabel).text(resistance);
-		$(slabel).text(speed);
+	// 	$(rlabel).text(resistance);
+	// 	$(slabel).text(speed);
 
 
-	});
-	rdown = false;
-	sdown = false;
+
+	var i = -90;
+
+	var needle = $("#needle").first();
+	needle.html(i);
 	$('#ts').click(function () {
-		setInterval(() => {
-			if (rdown) {
-				resistance -= 2;
-			}
-			else {
-				resistance += 2;
-			}
-			if (sdown) {
-				speed -= 3;
-			}
-			else {
-				speed += 3;
-			}
 
-			if (speed > 30) {
-				sdown = true;
-			}
-			if (speed <= 0) {
-				sdown = false;
-			}
-
-			if (resistance > 25) {
-				rdown = true;
-			}
-			if (resistance <= 0) {
-				rdown = false;
-			}
-			speedmeter.changePosition(speed);
-			resmeter.changePosition(resistance);
-
-			$(rlabel).text(Math.round(resistance,0));
-			$(slabel).text(Math.round(speed,2));
-		}, 1000);
 	});
 
+
+	setInterval(() => {
+		i += 1;
+		if (i >= 360) {
+			i = i - 360;
+		}
+		else if (i > 90) {
+			i = -90
+		}
+		needle.html(i);
+		needle.css("transform", `rotate(${i}deg)`);
+	}, 1000);
 	// maxVal              : 180,         /**Max value of the meter*/
 	//     divFact             : 10,          /**Division value of the meter*/
 	//     dangerLevel         : 120,         /**more than this leval, color will be red*/

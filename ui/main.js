@@ -10,7 +10,7 @@ function createWindow () {
   })
 
   //win.loadFile('gauge/gauge.html')
-  win.loadFile('proto/index.html')
+  win.loadFile('proto/proto.html')
 }
 
 app.whenReady().then(createWindow)
