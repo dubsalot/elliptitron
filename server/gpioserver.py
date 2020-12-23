@@ -8,6 +8,7 @@ import json
 hostName = "localhost"   # for the web server. electron will call this. will replace with gRPC maybe
 serverPort = 9001
 jsonEncoding = 'utf-8'
+startServer = False
 
 pinHallSensor = 40
 pinBlueLED = 38
@@ -49,10 +50,10 @@ totalRate = 0.0
 totalCountOnState = 0.0
 
 # times
-startTime               = time.time()
-currentTime             = startTime
+actualStartTime          = time.time()
+currentTime             = actualStartTime
 lastLoopTime            = currentTime;
-chunkRateStartTime      = startTime
+chunkRateStartTime      = actualStartTime
 totalElapsedTime        = 0.0
 lastLastTime            = 0.0
 lastLastStepTime        = 0.0
@@ -94,8 +95,10 @@ def start_server():
         pass
 
 if __name__ == '__main__':
-    t = threading.Thread(target=start_server)
-    t.start()
+
+    if startServer == True:
+        t = threading.Thread(target=start_server)
+        t.start()
 
 
 
@@ -125,62 +128,63 @@ if __name__ == '__main__':
         isBlueOn = GPIO.input(pinBlueLED)
 
     while isBlueOn == 1:
-        currentTime      = time.time()
-        totalElapsedTime = currentTime - startTime
-        totalRate        = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
-        
-        isHallSensorOn = GPIO.input(pinHallSensor)
-        isGreenOn      = GPIO.input(pinGreenLED)
-        isBlueOn       = GPIO.input(pinBlueLED)
-
-        #this means val is now 0 and the previous loop, it was 1
-        if isHallSensorOn == signal_off and pinOn == True: 
-            GPIO.output(pinStepIndicatorLED, GPIO.LOW)
-            pinOff = True
-            pinOn = False
-        
-        #this means a whole button press occurred.
-        #this prevents multiple counts for a long button press
-        if isHallSensorOn == signal_on and pinOff == True:
-            GPIO.output(pinStepIndicatorLED, GPIO.HIGH)
-            pinOn = True
-            pinOff = False
-                
-        
-            elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
-            onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
-            countOnStates = countOnStates + 1
-            totalCountOnState = totalCountOnState + 1
-            distance = totalCountOnState / stridesPerMile
-            mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
-
-            #12 cals per minute - 120 per hour  - 12/ 160 = per sec
-            calories = totalElapsedTime * (0.2)
-                                                        #6.5 = max
-                                                        #2244 =  9mph
-                                                        #1,928 joh for 60m at 7  85%
-                                                        #1,577	 5mph
-
-            stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
-            stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
-            stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
-
-            stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
-            stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
-            stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
-            stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
+        if totalCountOnState > 3:
+            currentTime      = time.time()
+            totalElapsedTime = currentTime - actualStartTime
+            totalRate        = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
             
-            timeOfLastOnState = time.time()
-        # end if val = 1
+            isHallSensorOn = GPIO.input(pinHallSensor)
+            isGreenOn      = GPIO.input(pinGreenLED)
+            isBlueOn       = GPIO.input(pinBlueLED)
 
-        
-        if countOnStates >= chunkSize:
-            if chunkRateStartTime != 0.0:
-                timeFor5Steps = time.time() - chunkRateStartTime
-                chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
-            countOnStates = 0
-            chunkRateStartTime = time.time()      #reset the chunk counter  
-        # end  if countOnStates >= chunkSize
+            #this means val is now 0 and the previous loop, it was 1
+            if isHallSensorOn == signal_off and pinOn == True: 
+                GPIO.output(pinStepIndicatorLED, GPIO.LOW)
+                pinOff = True
+                pinOn = False
+            
+            #this means a whole button press occurred.
+            #this prevents multiple counts for a long button press
+            if isHallSensorOn == signal_on and pinOff == True:
+                GPIO.output(pinStepIndicatorLED, GPIO.HIGH)
+                pinOn = True
+                pinOff = False
+                    
+            
+                elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
+                onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
+                countOnStates = countOnStates + 1
+                totalCountOnState = totalCountOnState + 1
+                distance = totalCountOnState / stridesPerMile
+                mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
+
+                #12 cals per minute - 120 per hour  - 12/ 160 = per sec
+                calories = totalElapsedTime * (0.2)
+                                                            #6.5 = max
+                                                            #2244 =  9mph
+                                                            #1,928 joh for 60m at 7  85%
+                                                            #1,577	 5mph
+
+                stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
+                stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
+                stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
+
+                stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
+                stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
+                stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
+                stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
+                
+                timeOfLastOnState = time.time()
+            # end if val = 1
+
+            
+            if countOnStates >= chunkSize:
+                if chunkRateStartTime != 0.0:
+                    timeFor5Steps = time.time() - chunkRateStartTime
+                    chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
+                countOnStates = 0
+                chunkRateStartTime = time.time()      #reset the chunk counter  
+            # end  if countOnStates >= chunkSize
 
         stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
         stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
