@@ -71,45 +71,17 @@ loopSleepTime     = 0.05  #how long to pause the main outer loop between reads
 sleepTimeForStart = 4     #first wait loop in the program to wait for blue LED to turn on
 decimalPlaces     = 2
 
-while isBlueOn == 0:
-    print(f'Waiting for blue light. Checking again in {sleepTimeForStart} seconds.')
-    print(f'pin read for HallSensor ---------> {GPIO.input(pinHallSensor)}')
-    print(f'pin read for GreenLED   ---------> {GPIO.input(pinGreenLED)}')
-    print(f'pin read for BlueLED          ---> {GPIO.input(pinBlueLED)}')
-    print(f'pin read for StepIndicatorLED ---> {GPIO.input(pinStepIndicatorLED)}')
-    time.sleep(sleepTimeForStart)
-    isBlueOn = GPIO.input(pinBlueLED)
-
-
-#init curses
-stdscr = curses.initscr()
-
-#print labels
-stdscr.addstr(startrow,     firstcolumn, "rate per minute :")
-stdscr.addstr(startrow + 1, firstcolumn, "chunk rate      :")
-stdscr.addstr(startrow + 2, firstcolumn, "chunk size      :")        
-stdscr.addstr(startrow + 3, firstcolumn, "since last step :")
-stdscr.addstr(startrow + 4, firstcolumn, "time            :")
-stdscr.addstr(startrow + 5, firstcolumn, "miles           :")
-stdscr.addstr(startrow + 6, firstcolumn, "mph             :")
-stdscr.addstr(startrow + 7, firstcolumn, "calories        :")
-
-isGreenOn = GPIO.input(pinGreenLED)
-isBlueOn = GPIO.input(pinBlueLED)
-
 
 class GPIOServer(BaseHTTPRequestHandler):
     def do_GET(self):
-        dict= {'TotalElapsedTime': totalElapsedTime}
+        dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState}
         resp = json.dumps(dict)
         self.send_response(200)
-        self.send_header("Content-type", "text/text")
+        self.send_header("Content-type", "text/json")
         self.end_headers()
         self.wfile.write(bytes(resp, jsonEncoding))
         self.wfile.flush()
         self.wfile.close()
-
-
 
 def start_server():
     # Setup stuff here...
@@ -125,6 +97,32 @@ if __name__ == '__main__':
     t = threading.Thread(target=start_server)
     t.start()
 
+
+
+    #init curses
+    stdscr = curses.initscr()
+
+    #print labels
+    stdscr.addstr(startrow,     firstcolumn, "rate per minute :")
+    stdscr.addstr(startrow + 1, firstcolumn, "chunk rate      :")
+    stdscr.addstr(startrow + 2, firstcolumn, "chunk size      :")        
+    stdscr.addstr(startrow + 3, firstcolumn, "since last step :")
+    stdscr.addstr(startrow + 4, firstcolumn, "time            :")
+    stdscr.addstr(startrow + 5, firstcolumn, "miles           :")
+    stdscr.addstr(startrow + 6, firstcolumn, "mph             :")
+    stdscr.addstr(startrow + 7, firstcolumn, "calories        :")
+
+    isGreenOn = GPIO.input(pinGreenLED)
+    isBlueOn = GPIO.input(pinBlueLED)
+
+    while isBlueOn == 0:
+        print(f'Waiting for blue light. Checking again in {sleepTimeForStart} seconds.')
+        print(f'pin read for HallSensor ---------> {GPIO.input(pinHallSensor)}')
+        print(f'pin read for GreenLED   ---------> {GPIO.input(pinGreenLED)}')
+        print(f'pin read for BlueLED          ---> {GPIO.input(pinBlueLED)}')
+        print(f'pin read for StepIndicatorLED ---> {GPIO.input(pinStepIndicatorLED)}')
+        time.sleep(sleepTimeForStart)
+        isBlueOn = GPIO.input(pinBlueLED)
 
     while isBlueOn == 1:
         currentTime      = time.time()

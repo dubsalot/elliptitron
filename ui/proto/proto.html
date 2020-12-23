@@ -25,7 +25,7 @@
       <canvas id="calsPerMinute" width="400" height="400"></canvas>
     </div>
     <div class="flex-item flex-item-right">
-      <div class="extlabel">0</div>
+      <div id="SpeedMetricLabel" class="extlabel">0</div>
       <div class="inddescrip">MPH</div>
       <canvas id="speed" width="400" height="400"></canvas>
     </div>
@@ -41,6 +41,10 @@
     var max = 25;
     Meter("calsPerMinute");
     Meter("speed");
+
+    setInterval(function(){
+      getStats();
+    },1000)
   </script>
 </body>
 

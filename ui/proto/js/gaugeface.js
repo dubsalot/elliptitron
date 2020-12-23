@@ -6,6 +6,13 @@ function degToRad(degree) {
     return degree * factor;
 }
 
+function getStats() {
+    jQuery.get("http://localhost:9001/", function (data) {
+        console.log(data);
+        if(data && data.mph)
+            jQuery("#SpeedMetricLabel").html(data.mph)
+    });
+}
 
 function Meter(canvas) {
 
