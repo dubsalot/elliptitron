@@ -1,8 +1,13 @@
 import curses, time
 import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
 from time import sleep     # Import the sleep function from the time module
+from http.server import BaseHTTPRequestHandler, HTTPServer
+import threading
+import json
 
-
+hostName = "localhost"   # for the web server. electron will call this. will replace with gRPC maybe
+serverPort = 9001
+jsonEncoding = 'utf-8'
 
 pinHallSensor = 40
 pinBlueLED = 38
@@ -92,95 +97,124 @@ stdscr.addstr(startrow + 7, firstcolumn, "calories        :")
 isGreenOn = GPIO.input(pinGreenLED)
 isBlueOn = GPIO.input(pinBlueLED)
 
-while isBlueOn == 1:
-    currentTime      = time.time()
-    totalElapsedTime = currentTime - startTime
-    totalRate        = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
-    
-    isHallSensorOn = GPIO.input(pinHallSensor)
-    isGreenOn      = GPIO.input(pinGreenLED)
-    isBlueOn       = GPIO.input(pinBlueLED)
 
-    #this means val is now 0 and the previous loop, it was 1
-    if isHallSensorOn == signal_off and pinOn == True: 
-        GPIO.output(pinStepIndicatorLED, GPIO.LOW)
-        pinOff = True
-        pinOn = False
-    
-    #this means a whole button press occurred.
-    #this prevents multiple counts for a long button press
-    if isHallSensorOn == signal_on and pinOff == True:
-        GPIO.output(pinStepIndicatorLED, GPIO.HIGH)
-        pinOn = True
-        pinOff = False
-               
-      
-        elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
-        onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
-        countOnStates = countOnStates + 1
-        totalCountOnState = totalCountOnState + 1
-        distance = totalCountOnState / stridesPerMile
-        mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
+class GPIOServer(BaseHTTPRequestHandler):
+    def do_GET(self):
+        dict= {'TotalElapsedTime': totalElapsedTime}
+        resp = json.dumps(dict)
+        self.send_response(200)
+        self.send_header("Content-type", "text/text")
+        self.end_headers()
+        self.wfile.write(bytes(resp, jsonEncoding))
+        self.wfile.flush()
+        self.wfile.close()
 
-        #12 cals per minute - 120 per hour  - 12/ 160 = per sec
-        calories = totalElapsedTime * (0.2)
-                                                    #6.5 = max
-                                                    #2244 =  9mph
-                                                    #1,928 joh for 60m at 7  85%
-                                                    #1,577	 5mph
 
-        stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
-        stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
-        stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
 
-        stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
-        stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
-        stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
-        stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
+def start_server():
+    # Setup stuff here...
+    webServer = HTTPServer((hostName, serverPort), GPIOServer)
+    print("Server started http://%s:%s" % (hostName, serverPort))
+
+    try:
+        webServer.serve_forever()
+    except KeyboardInterrupt:
+        pass
+
+if __name__ == '__main__':
+    t = threading.Thread(target=start_server)
+    t.start()
+
+
+    while isBlueOn == 1:
+        currentTime      = time.time()
+        totalElapsedTime = currentTime - startTime
+        totalRate        = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
         
-        timeOfLastOnState = time.time()
-    # end if val = 1
+        isHallSensorOn = GPIO.input(pinHallSensor)
+        isGreenOn      = GPIO.input(pinGreenLED)
+        isBlueOn       = GPIO.input(pinBlueLED)
 
-    
-    if countOnStates >= chunkSize:
-        if chunkRateStartTime != 0.0:
-            timeFor5Steps = time.time() - chunkRateStartTime
-            chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
-        countOnStates = 0
-        chunkRateStartTime = time.time()      #reset the chunk counter  
-    # end  if countOnStates >= chunkSize
+        #this means val is now 0 and the previous loop, it was 1
+        if isHallSensorOn == signal_off and pinOn == True: 
+            GPIO.output(pinStepIndicatorLED, GPIO.LOW)
+            pinOff = True
+            pinOn = False
+        
+        #this means a whole button press occurred.
+        #this prevents multiple counts for a long button press
+        if isHallSensorOn == signal_on and pinOff == True:
+            GPIO.output(pinStepIndicatorLED, GPIO.HIGH)
+            pinOn = True
+            pinOff = False
+                
+        
+            elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
+            onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
+            countOnStates = countOnStates + 1
+            totalCountOnState = totalCountOnState + 1
+            distance = totalCountOnState / stridesPerMile
+            mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
 
-    stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
-    stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
+            #12 cals per minute - 120 per hour  - 12/ 160 = per sec
+            calories = totalElapsedTime * (0.2)
+                                                        #6.5 = max
+                                                        #2244 =  9mph
+                                                        #1,928 joh for 60m at 7  85%
+                                                        #1,577	 5mph
 
-    stdscr.addstr(startrow + 9,  firstcolumn + 20, f'green   : {str(isGreenOn)}')
-    stdscr.addstr(startrow + 10, firstcolumn + 20, f'blue    : {str(isBlueOn)}')
-    stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
+            stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
+            stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
+            stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
 
-    stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
-    stdscr.addstr(startrow + 16, firstcolumn + 20, f'stepPin : {GPIO.input(pinStepIndicatorLED)}')
+            stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
+            stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
+            stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
+            stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
+            
+            timeOfLastOnState = time.time()
+        # end if val = 1
 
-    stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
-    time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
+        
+        if countOnStates >= chunkSize:
+            if chunkRateStartTime != 0.0:
+                timeFor5Steps = time.time() - chunkRateStartTime
+                chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
+            countOnStates = 0
+            chunkRateStartTime = time.time()      #reset the chunk counter  
+        # end  if countOnStates >= chunkSize
 
-# end the whileloop
-curses.echo()
-curses.endwin()
+        stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
+        stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
 
-GPIO.cleanup()
+        stdscr.addstr(startrow + 9,  firstcolumn + 20, f'green   : {str(isGreenOn)}')
+        stdscr.addstr(startrow + 10, firstcolumn + 20, f'blue    : {str(isBlueOn)}')
+        stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
+
+        stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
+        stdscr.addstr(startrow + 16, firstcolumn + 20, f'stepPin : {GPIO.input(pinStepIndicatorLED)}')
+
+        stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
+        time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
+
+    # end the whileloop
+    curses.echo()
+    curses.endwin()
+
+    GPIO.cleanup()
 
 
-print(f'green           : {str(isGreenOn)}')
-print(f'blue            : {str(isBlueOn)}')
-print(f'rate per minute : {str(totalRate)}')
-print(f'chunk rate      : {str(chunkRate)}')
-print(f'chunk size      : {str(chunkSize)}')
-print(f'since last step : {str(elapsedSinceLastOnState)}')
-print(f'time            : {str(round(totalElapsedTime, decimalPlaces))}')
-print(f'miles           : {str(round(distance, decimalPlaces))}')
-print(f'mph             : {str(round(mph, decimalPlaces))}')
-print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
-print(f'total steps     : {str(totalCountOnState)}')
-print(f'calories     : {str(round(calories, decimalPlaces))}')
+    print(f'green           : {str(isGreenOn)}')
+    print(f'blue            : {str(isBlueOn)}')
+    print(f'rate per minute : {str(totalRate)}')
+    print(f'chunk rate      : {str(chunkRate)}')
+    print(f'chunk size      : {str(chunkSize)}')
+    print(f'since last step : {str(elapsedSinceLastOnState)}')
+    print(f'time            : {str(round(totalElapsedTime, decimalPlaces))}')
+    print(f'miles           : {str(round(distance, decimalPlaces))}')
+    print(f'mph             : {str(round(mph, decimalPlaces))}')
+    print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
+    print(f'total steps     : {str(totalCountOnState)}')
+    print(f'calories     : {str(round(calories, decimalPlaces))}')
 
-exit
+    exit
