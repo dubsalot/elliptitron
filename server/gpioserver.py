@@ -1,14 +1,25 @@
 import curses, time
 import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
-from time import sleep     # Import the sleep function from the time module
-from http.server import BaseHTTPRequestHandler, HTTPServer
 import threading
-import json
+from json import dumps
+import sys
+from bottle import route, run
+from bottle import response
+
+
+
+
+
+
+
+print(f'length: {len(sys.argv) > 1}  {sys.argv.__contains__("start-server")}')
 
 hostName = "localhost"   # for the web server. electron will call this. will replace with gRPC maybe
 serverPort = 9001
 jsonEncoding = 'utf-8'
 startServer = False
+startServer = len(sys.argv) > 1 and sys.argv.__contains__("start-server")
+startServer = True
 
 pinHallSensor = 40
 pinBlueLED = 38
@@ -72,27 +83,33 @@ loopSleepTime     = 0.05  #how long to pause the main outer loop between reads
 sleepTimeForStart = 4     #first wait loop in the program to wait for blue LED to turn on
 decimalPlaces     = 2
 
+@route('/state')
+def returnarray():
+    dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState}
+    response.content_type = 'application/json'
+    return dumps(dict)
 
-class GPIOServer(BaseHTTPRequestHandler):
-    def do_GET(self):
-        dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState}
-        resp = json.dumps(dict)
-        self.send_response(200)
-        self.send_header("Content-type", "text/json")
-        self.end_headers()
-        self.wfile.write(bytes(resp, jsonEncoding))
-        self.wfile.flush()
-        self.wfile.close()
+# class GPIOServer(BaseHTTPRequestHandler):
+#     def do_GET(self):
+#         lock.acquire()
+#         try:
+#             dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState}
+#             resp = json.dumps(dict)
+#             self.send_response(200)
+#             self.send_header("Content-type", "application/json")
+#             self.end_headers()
+#             self.wfile.write(bytes(resp, jsonEncoding))
+#             self.wfile.flush()
+#             self.wfile.close()
+#             self.wfile.flush()
+#         except:
+#             print("An exception occurred")            
+#         finally:
+#             lock.release()        
+#         return
 
 def start_server():
-    # Setup stuff here...
-    webServer = HTTPServer((hostName, serverPort), GPIOServer)
-    print("Server started http://%s:%s" % (hostName, serverPort))
-
-    try:
-        webServer.serve_forever()
-    except KeyboardInterrupt:
-        pass
+    run(host=hostName, port=serverPort, debug=True)
 
 if __name__ == '__main__':
 
@@ -113,14 +130,14 @@ if __name__ == '__main__':
     print(f'pin read for StepIndicatorLED ---> {GPIO.input(pinStepIndicatorLED)}\n')
     print(f'intitialSteps                 ---> {intitialSteps}\n')
     print("------------------------------------------------------------------------")    
-    while intitialSteps < 3:
-        if(GPIO.input(pinHallSensor) == 1):
-            pinWasOn = True
-        if GPIO.input(pinHallSensor) == 0 and pinWasOn == True:
-            pinWasOn = False
-            intitialSteps += 1
-        time.sleep(loopSleepTime)
-        isBlueOn = GPIO.input(pinBlueLED)
+    # while intitialSteps < 3:
+    #     if(GPIO.input(pinHallSensor) == signal_on):
+    #         pinWasOn = True
+    #     if GPIO.input(pinHallSensor) == signal_off and pinWasOn == True:
+    #         pinWasOn = False
+    #         intitialSteps += 1
+    #     time.sleep(loopSleepTime)
+    #     isBlueOn = GPIO.input(pinBlueLED)
 
 
 
@@ -150,6 +167,8 @@ if __name__ == '__main__':
         isHallSensorOn = GPIO.input(pinHallSensor)
         isGreenOn      = GPIO.input(pinGreenLED)
         isBlueOn       = GPIO.input(pinBlueLED)
+
+        
 
         #this means val is now 0 and the previous loop, it was 1
         if isHallSensorOn == signal_off and pinOn == True: 
@@ -208,7 +227,7 @@ if __name__ == '__main__':
         stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
 
         stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
-        stdscr.addstr(startrow + 16, firstcolumn + 20, f'stepPin : {GPIO.input(pinStepIndicatorLED)}')
+        stdscr.addstr(startrow + 17, firstcolumn + 20, f'hall {isHallSensorOn} green {isGreenOn} blue {isBlueOn}')
 
         stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
         time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
@@ -232,5 +251,7 @@ if __name__ == '__main__':
     print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
     print(f'total steps     : {str(totalCountOnState)}')
     print(f'calories     : {str(round(calories, decimalPlaces))}')
+
+    print(f'hall {isHallSensorOn} green {isGreenOn} blue {isBlueOn}')
 
     exit
