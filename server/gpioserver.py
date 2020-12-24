@@ -29,11 +29,8 @@ GPIO.setwarnings(False)    # Ignore warning for now
 GPIO.setmode(GPIO.BOARD)   # Use physical pin numbering
 GPIO.setup(pinHallSensorNorth, GPIO.IN, GPIO.PUD_DOWN)
 GPIO.setup(pinHallSensorSouth, GPIO.IN, GPIO.PUD_DOWN)  
-GPIO.setup(pinGreenLED, GPIO.OUT) 
-GPIO.setup(pinBlueLED, GPIO.OUT) 
-GPIO.output(pinBlueLED, GPIO.LOW)
-GPIO.output(pinGreenLED, GPIO.LOW)
-
+GPIO.setup(pinGreenLED, GPIO.IN, GPIO.PUD_DOWN) 
+GPIO.setup(pinBlueLED, GPIO.IN, GPIO.PUD_DOWN) 
 
 # used to account for multiple readings of On during one on-state
 onStateThreshold = 0.05
@@ -53,12 +50,6 @@ calories = 0.0
 mph = 0
 totalRate = 0.0
 totalCountOnState = 0.0
-global  State
-State = 1
-            #  1 = Not Started
-            #  2 = WorkingOut
-            #  3 = Paused
-            #  4 = Finished
 
 # times
 actualStartTime         = time.time()
@@ -76,35 +67,7 @@ firstcolumn       = 10    #curses - which column to start printing.  offsets are
 loopSleepTime     = 0.05  #how long to pause the main outer loop between reads
 decimalPlaces     = 2
 
-def is_not_started():
-    return State == 1
-    
-def is_working_out():
-    return State == 2
-
-def is_paused():
-    return State == 3    
-
-def is_finished():
-    return State == 4
-
-def set_not_started():
-    global State
-    State = 1
-    
-def set_working_out():
-    global State
-    State = 2
-    GPIO.output(pinBlueLED, GPIO.HIGH)
-
-def set_paused():
-    global State
-    State = 3    
-    GPIO.output(pinBlueLED, GPIO.LOW)
-
-def set_finished():
-    global State
-    State = 4         
+     
 
 @route('/state')
 def returnarray():
@@ -126,20 +89,20 @@ if __name__ == '__main__':
             t = threading.Thread(target=start_server)
             t.start()
 
-        pinWasOn = False
-        intitialSteps = 0;
-        print(f'Waiting for a few initial steps. intitialSteps: {intitialSteps}, North: {GPIO.input(pinHallSensorNorth)}, South: {GPIO.input(pinHallSensorSouth)}')
-        while is_not_started() == True:
-            pinDetectsMagnet = is_magnet_detected()
-            if(pinDetectsMagnet):
-                pinWasOn = True
-            if pinDetectsMagnet == signal_off and pinWasOn == True:
-                pinWasOn = False
-                intitialSteps += 1
-            if(intitialSteps > 3):
-                set_working_out();
-            else:
-                time.sleep(loopSleepTime)
+        # pinWasOn = False
+        # intitialSteps = 0;
+        # print(f'Waiting for a few initial steps. intitialSteps: {intitialSteps}, North: {GPIO.input(pinHallSensorNorth)}, South: {GPIO.input(pinHallSensorSouth)}')
+        # while is_not_started() == True:
+        #     pinDetectsMagnet = is_magnet_detected()
+        #     if(pinDetectsMagnet):
+        #         pinWasOn = True
+        #     if pinDetectsMagnet == signal_off and pinWasOn == True:
+        #         pinWasOn = False
+        #         intitialSteps += 1
+        #     if(intitialSteps > 3):
+        #         set_working_out();
+        #     else:
+        #         time.sleep(loopSleepTime)
 
 
         #init curses
@@ -158,85 +121,86 @@ if __name__ == '__main__':
         
         pinOn = False
         pinOff = True
+        powerOn = True
 
-        while is_working_out() == True or is_paused():
-
-            wo = is_working_out()
-            if wo == True:
+        while True:
+            isWorkingOut = (GPIO.input(pinBlueLED) == 1)
+            powerOn = True if (GPIO.input(pinBlueLED) == 1) or (GPIO.input(pinGreenLED) == 1) else False
+            if powerOn == False:
+                break            
+            if isWorkingOut == False:
+                while isWorkingOut == False:
+                    isWorkingOut = (GPIO.input(pinBlueLED) == 1)
+                    powerOn = True if (GPIO.input(pinBlueLED) == 1) or (GPIO.input(pinGreenLED) == 1) else False
+                    if powerOn == False:
+                        break
+                    time.sleep(2)
+                if powerOn == False:
+                    break                    
+            else:
                 currentTime      = time.time()
                 totalElapsedTime = currentTime - actualStartTime
 
+                totalRate = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
+                isHallSensorOn = is_magnet_detected()
 
-
-            totalRate = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
-            isHallSensorOn = is_magnet_detected()
-
-            # this means val is now 0 and the previous loop, it was 1
-            if isHallSensorOn == False and pinOn == True: 
-                GPIO.output(pinGreenLED, GPIO.LOW)
-                pinOff = True
-                pinOn = False
-            
-            # this means a whole button press occurred.
-            # this prevents multiple counts for a long button press
-            if isHallSensorOn == True and pinOff == True:
-                GPIO.output(pinGreenLED, GPIO.HIGH)
-                pinOn = True
-                pinOff = False
-                if wo == True:
-                    elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
-                else:
-                    elapsedSinceLastOnState = 0.0
-
-                onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
-                countOnStates = countOnStates + 1
-                totalCountOnState = totalCountOnState + 1
-                distance = totalCountOnState / stridesPerMile
-                mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
+                # this means val is now 0 and the previous loop, it was 1
+                if isHallSensorOn == False and pinOn == True: 
+                    pinOff = True
+                    pinOn = False
                 
+                # this means a whole button press occurred.
+                # this prevents multiple counts for a long button press
+                if isHallSensorOn == True and pinOff == True:
+                    pinOn = True
+                    pinOff = False
+                    if isWorkingOut == True:
+                        elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
+                    else:
+                        elapsedSinceLastOnState = 0.0
 
-                #12 cals per minute - 120 per hour  - 12/ 160 = per sec
-                calories = totalElapsedTime * (0.2)
-                                                            #6.5 = max
-                                                            #2244 =  9mph
-                                                            #1,928 joh for 60m at 7  85%
-                                                            #1,577	 5mph
+                    onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
+                    countOnStates = countOnStates + 1
+                    totalCountOnState = totalCountOnState + 1
+                    distance = totalCountOnState / stridesPerMile
+                    mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
+                    
 
-                if elapsedSinceLastOnState > 3.00:
-                    set_paused()
-                else:
-                    set_working_out()
+                    #12 cals per minute - 120 per hour  - 12/ 160 = per sec
+                    calories = totalElapsedTime * (0.2)
+                                                                #6.5 = max
+                                                                #2244 =  9mph
+                                                                #1,928 joh for 60m at 7  85%
+                                                                #1,577	 5mph
                     timeOfLastOnState = time.time()
 
-                stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
-                stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
-                stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
+                    stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
+                    stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
+                    stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
 
-                stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
-                stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
-                stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
-                stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
-            
-            if elapsedSinceLastOnState > 3.00:
-                set_paused()
-            # end if val = 1
+                    stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
+                    stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
+                    stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
+                    stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
+             
+                # end if val = 1
 
-            
-            if countOnStates >= chunkSize:
-                if chunkRateStartTime != 0.0:
-                    timeFor5Steps = time.time() - chunkRateStartTime
-                    chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
-                countOnStates = 0
-                chunkRateStartTime = time.time()      #reset the chunk counter  
-            # end  if countOnStates >= chunkSize
+                
+                if countOnStates >= chunkSize:
+                    if chunkRateStartTime != 0.0:
+                        timeFor5Steps = time.time() - chunkRateStartTime
+                        chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
+                    countOnStates = 0
+                    chunkRateStartTime = time.time()      #reset the chunk counter  
+                # end  if countOnStates >= chunkSize
 
-            stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
-            stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
-            stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
-            stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
-            
-            stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
-            time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
+                stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
+                stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
+                stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
+                stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
+                
+                stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
+                time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
 
         # end the main whileloop
     
@@ -254,7 +218,6 @@ if __name__ == '__main__':
         print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
         print(f'total steps     : {str(totalCountOnState)}')
         print(f'calories        : {str(round(calories, decimalPlaces))}')
-        print(f'State           : {str(State)}')
     finally:
         curses.echo()
         curses.endwin()
@@ -269,6 +232,4 @@ if __name__ == '__main__':
         print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
         print(f'total steps     : {str(totalCountOnState)}')
         print(f'calories        : {str(round(calories, decimalPlaces))}')
-        print(f'State           : {str(State)}')        
-
     exit
