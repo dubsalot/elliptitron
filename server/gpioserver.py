@@ -19,26 +19,29 @@ serverPort = 9001
 jsonEncoding = 'utf-8'
 startServer = False
 startServer = len(sys.argv) > 1 and sys.argv.__contains__("start-server")
-startServer = True
+##startServer = True
 
-pinHallSensor = 40
+pinHallSensorNorth = 40
+pinHallSensorSouth = 37
+
 pinBlueLED = 38
 pinGreenLED = 36
-pinStepIndicatorLED = 37
+
 
 signal_on = 0
 signal_off = 1
-isGreenOn = 0
-isBlueOn = 0
+
 pinOn = False
 pinOff = True
 
 GPIO.setwarnings(False)    # Ignore warning for now
 GPIO.setmode(GPIO.BOARD)   # Use physical pin numbering
-GPIO.setup(pinHallSensor, GPIO.IN, GPIO.PUD_DOWN) 
-GPIO.setup(pinBlueLED, GPIO.IN, GPIO.PUD_DOWN) 
-GPIO.setup(pinGreenLED, GPIO.IN, GPIO.PUD_DOWN) 
-GPIO.setup(pinStepIndicatorLED, GPIO.OUT, initial=GPIO.LOW)
+GPIO.setup(pinHallSensorNorth, GPIO.IN, GPIO.PUD_DOWN)
+GPIO.setup(pinHallSensorSouth, GPIO.IN, GPIO.PUD_DOWN)  
+GPIO.setup(pinGreenLED, GPIO.OUT) 
+GPIO.setup(pinBlueLED, GPIO.OUT) 
+GPIO.output(pinBlueLED, GPIO.LOW)
+GPIO.output(pinGreenLED, GPIO.LOW)
 
 
 # used to account for multiple readings of On during one on-state
@@ -59,6 +62,11 @@ calories = 0.0
 mph = 0
 totalRate = 0.0
 totalCountOnState = 0.0
+State = 1
+            #  1 = Not Started
+            #  2 = WorkingOut
+            #  3 = Paused
+            #  4 = Finished
 
 # times
 actualStartTime         = time.time()
@@ -70,18 +78,37 @@ lastLastTime            = 0.0
 lastLastStepTime        = 0.0
 elapsedSinceLastOnState = 0.0
 
-
-isGreenOn      = GPIO.input(pinGreenLED)
-isBlueOn       = GPIO.input(pinBlueLED)
-isHallSensorOn = GPIO.input(pinHallSensor)
-
-
 #cLI display stuff and program control stuff
 startrow          = 1     #curses lib for STDOUT which row to begin printing
 firstcolumn       = 10    #curses - which column to start printing.  offsets are calculated from startrow and startcolumn
 loopSleepTime     = 0.05  #how long to pause the main outer loop between reads
-sleepTimeForStart = 4     #first wait loop in the program to wait for blue LED to turn on
 decimalPlaces     = 2
+
+def is_not_started():
+    return State == 1
+    
+def is_working_out():
+    return State == 2
+
+def is_paused():
+    return State == 3    
+
+def is_finished():
+    return State == 4
+
+def set_not_started():
+    State = 1
+    
+def set_working_out():
+    State = 2
+    GPIO.output(pinBlueLED, GPIO.HIGH)
+
+def set_paused():
+    State = 3    
+    GPIO.output(pinBlueLED, GPIO.LOW)
+
+def set_finished():
+    State = 4         
 
 @route('/state')
 def returnarray():
@@ -89,56 +116,31 @@ def returnarray():
     response.content_type = 'application/json'
     return dumps(dict)
 
-# class GPIOServer(BaseHTTPRequestHandler):
-#     def do_GET(self):
-#         lock.acquire()
-#         try:
-#             dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState}
-#             resp = json.dumps(dict)
-#             self.send_response(200)
-#             self.send_header("Content-type", "application/json")
-#             self.end_headers()
-#             self.wfile.write(bytes(resp, jsonEncoding))
-#             self.wfile.flush()
-#             self.wfile.close()
-#             self.wfile.flush()
-#         except:
-#             print("An exception occurred")            
-#         finally:
-#             lock.release()        
-#         return
-
 def start_server():
     run(host=hostName, port=serverPort, debug=True)
 
-if __name__ == '__main__':
+def is_magnet_detected():
+    return  GPIO.input(pinHallSensorNorth)  == signal_on or GPIO.input(pinHallSensorSouth) == signal_on
 
+if __name__ == '__main__':
     if startServer == True:
         t = threading.Thread(target=start_server)
         t.start()
 
-
-
-
-
     pinWasOn = False
     intitialSteps = 0;
-    print(f'Waiting for blue light and a few initial steps.\n')
-    print(f'pin read for HallSensor ---------> {GPIO.input(pinHallSensor)}\n')
-    print(f'pin read for GreenLED   ---------> {GPIO.input(pinGreenLED)}\n')
-    print(f'pin read for BlueLED          ---> {GPIO.input(pinBlueLED)}\n')
-    print(f'pin read for StepIndicatorLED ---> {GPIO.input(pinStepIndicatorLED)}\n')
-    print(f'intitialSteps                 ---> {intitialSteps}\n')
-    print("------------------------------------------------------------------------")    
-    # while intitialSteps < 3:
-    #     if(GPIO.input(pinHallSensor) == signal_on):
-    #         pinWasOn = True
-    #     if GPIO.input(pinHallSensor) == signal_off and pinWasOn == True:
-    #         pinWasOn = False
-    #         intitialSteps += 1
-    #     time.sleep(loopSleepTime)
-    #     isBlueOn = GPIO.input(pinBlueLED)
-
+    print(f'Waiting for a few initial steps. intitialSteps: {intitialSteps}, North: {GPIO.input(pinHallSensorNorth)}, South: {GPIO.input(pinHallSensorSouth)}')
+    while is_not_started() == True:
+        pinDetectsMagnet = is_magnet_detected()
+        if(pinDetectsMagnet):
+            pinWasOn = True
+        if pinDetectsMagnet == signal_off and pinWasOn == True:
+            pinWasOn = False
+            intitialSteps += 1
+        if(intitialSteps > 3):
+            set_working_out();
+        else:
+            time.sleep(loopSleepTime)
 
 
     #init curses
@@ -154,42 +156,39 @@ if __name__ == '__main__':
     stdscr.addstr(startrow + 6, firstcolumn, "mph             :")
     stdscr.addstr(startrow + 7, firstcolumn, "calories        :")
 
-    isGreenOn = GPIO.input(pinGreenLED)
-    isBlueOn = GPIO.input(pinBlueLED)
     
     pinOn = False
     pinOff = True
-    while isBlueOn == 1:
-        currentTime      = time.time()
-        totalElapsedTime = currentTime - actualStartTime
-        totalRate        = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
-        
-        isHallSensorOn = GPIO.input(pinHallSensor)
-        isGreenOn      = GPIO.input(pinGreenLED)
-        isBlueOn       = GPIO.input(pinBlueLED)
 
-        
+    while is_working_out() == True or is_paused():
 
-        #this means val is now 0 and the previous loop, it was 1
-        if isHallSensorOn == signal_off and pinOn == True: 
-            GPIO.output(pinStepIndicatorLED, GPIO.LOW)
+        if is_working_out() == True:
+            currentTime      = time.time()
+            totalElapsedTime = currentTime - actualStartTime
+
+        totalRate = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
+        isHallSensorOn = is_magnet_detected()
+
+        # this means val is now 0 and the previous loop, it was 1
+        if isHallSensorOn == False and pinOn == True: 
+            GPIO.output(pinGreenLED, GPIO.LOW)
             pinOff = True
             pinOn = False
         
-        #this means a whole button press occurred.
-        #this prevents multiple counts for a long button press
-        if isHallSensorOn == signal_on and pinOff == True:
-            GPIO.output(pinStepIndicatorLED, GPIO.HIGH)
+        # this means a whole button press occurred.
+        # this prevents multiple counts for a long button press
+        if isHallSensorOn == True and pinOff == True:
+            GPIO.output(pinGreenLED, GPIO.HIGH)
             pinOn = True
             pinOff = False
                 
-        
             elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
             onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
             countOnStates = countOnStates + 1
             totalCountOnState = totalCountOnState + 1
             distance = totalCountOnState / stridesPerMile
             mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
+            
 
             #12 cals per minute - 120 per hour  - 12/ 160 = per sec
             calories = totalElapsedTime * (0.2)
@@ -197,6 +196,12 @@ if __name__ == '__main__':
                                                         #2244 =  9mph
                                                         #1,928 joh for 60m at 7  85%
                                                         #1,577	 5mph
+
+            if elapsedSinceLastOnState > 3.00:
+                set_paused()
+            else:
+                set_working_out()
+                timeOfLastOnState = time.time()
 
             stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
             stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
@@ -207,7 +212,7 @@ if __name__ == '__main__':
             stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
             stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
             
-            timeOfLastOnState = time.time()
+            
         # end if val = 1
 
         
@@ -221,14 +226,9 @@ if __name__ == '__main__':
 
         stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
         stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
-
-        stdscr.addstr(startrow + 9,  firstcolumn + 20, f'green   : {str(isGreenOn)}')
-        stdscr.addstr(startrow + 10, firstcolumn + 20, f'blue    : {str(isBlueOn)}')
         stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
-
         stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
-        stdscr.addstr(startrow + 17, firstcolumn + 20, f'hall {isHallSensorOn} green {isGreenOn} blue {isBlueOn}')
-
+        
         stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
         time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
 
@@ -239,8 +239,6 @@ if __name__ == '__main__':
     GPIO.cleanup()
 
 
-    print(f'green           : {str(isGreenOn)}')
-    print(f'blue            : {str(isBlueOn)}')
     print(f'rate per minute : {str(totalRate)}')
     print(f'chunk rate      : {str(chunkRate)}')
     print(f'chunk size      : {str(chunkSize)}')
@@ -250,8 +248,7 @@ if __name__ == '__main__':
     print(f'mph             : {str(round(mph, decimalPlaces))}')
     print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
     print(f'total steps     : {str(totalCountOnState)}')
-    print(f'calories     : {str(round(calories, decimalPlaces))}')
-
-    print(f'hall {isHallSensorOn} green {isGreenOn} blue {isBlueOn}')
+    print(f'calories        : {str(round(calories, decimalPlaces))}')
+    print(f'State           : {str(State)}')
 
     exit
