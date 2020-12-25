@@ -28,3 +28,10 @@ app.on('activate', () => {
     createWindow()
   }
 })
+
+
+function Buttons() { 
+  jQuery("#btnrefresh").on("click", function(){
+      win.reload();
+  })
+}

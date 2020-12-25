@@ -18,8 +18,8 @@ h1 {
   border-radius: 50%;
   box-shadow: 0 5px 14px black;
   display: block;
-  height: 400px;
-  width: 400px;
+  height: 800px;
+  width: 800px;
   position: relative;
 }
 
@@ -36,6 +36,7 @@ h1 {
   display: flex;
   position: relative;  
   flex-direction: column;
+  font-weight:bolder;
 }
 
 .flex-item-left {
@@ -50,13 +51,13 @@ h1 {
 
 .extlabel {
   position: absolute;
-  top: 130px;
+  top: 300px;
   left: 0; 
   right:0;
   text-align: center; 
   z-index: 9000;
   padding: 5px;
-  font-size: 5em;
+  font-size: 8em;
   opacity: 0.7;
 }
 
@@ -64,7 +65,7 @@ h1 {
   font-size: 1.2em;
   position: absolute;
   z-index: 9000;
-  top: 300px;
+  top: 600px;
   left: 0; 
   right:0;
   text-align: center; 

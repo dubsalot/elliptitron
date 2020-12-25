@@ -1,5 +1,6 @@
 var net = require('net');
 var jQuery = require('jquery');
+const { app, BrowserWindow } = require('electron')
 
 function degToRad(degree) {
     var factor = Math.PI / 180;
@@ -18,6 +19,12 @@ function getStats() {
 // var window = electron.remote.getCurrentWindow();
 // window.setFullScreen(true);
 
+function Buttons() { 
+    document.querySelector('#btnrefresh').addEventListener('click', () => {
+        var win = BrowserWindow.getFocusedWindow();
+        console.log(win);
+    })
+}
 
 function Meter(canvas) {
 
@@ -30,11 +37,11 @@ function Meter(canvas) {
     ctx.shadowColor = '#28d1fa';
 
     // Background
-    gradient = ctx.createRadialGradient(200, 200, 5, 200, 200, 300);
+    gradient = ctx.createRadialGradient(400, 400, 5, 400, 400, 300);
     gradient.addColorStop(0, '#09303a');
     gradient.addColorStop(1, '#000000');
     ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, 400, 400);
+    ctx.fillRect(0, 0, 800, 800);
 
     var to = 140 + ((350 - 140) * .75);
     var from = 140;
@@ -49,7 +56,7 @@ function Meter(canvas) {
 
     ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.arc(200, 200, 180, degToRad(from), degToRad(400));
+    ctx.arc(400, 400, 360, degToRad(from), degToRad(400));
     ctx.stroke();
 
     //speed goes here

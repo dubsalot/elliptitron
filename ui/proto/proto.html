@@ -26,19 +26,19 @@
       <span class="material-icons">
         close_fullscreen
       </span>
-      <span class="material-icons">
+      <span id="btnrefresh" class="material-icons">
         refresh
       </span>
     </div>
     <div class="flex-item">
       <div class="extlabel">0</div>
       <div class="inddescrip">Calories/Minute</div>
-      <canvas id="calsPerMinute" width="400" height="400"></canvas>
+      <canvas id="calsPerMinute" width="800" height="800"></canvas>
     </div>
     <div class="flex-item">
       <div id="SpeedMetricLabel" class="extlabel">0</div>
       <div class="inddescrip">MPH</div>
-      <canvas id="speed" width="400" height="400"></canvas>
+      <canvas id="speed" width="800" height="800"></canvas>
     </div>
     <!-- <div class="flex-item">
       <div id="meters">
@@ -52,6 +52,7 @@
     var max = 25;
     Meter("calsPerMinute");
     Meter("speed");
+    Buttons("btnrefresh")
 
     setInterval(function () {
       getStats();
