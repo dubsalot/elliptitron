@@ -76,7 +76,7 @@ def returnarray():
     return dumps(dict)
 
 def start_server():
-    run(host=hostName, port=serverPort, debug=True)
+    run(host=hostName, port=serverPort, debug=True, quiet=True)
 
 def is_magnet_detected():
     return  GPIO.input(pinHallSensorNorth)  == signal_on or GPIO.input(pinHallSensorSouth) == signal_on
@@ -122,8 +122,15 @@ if __name__ == '__main__':
         pinOn = False
         pinOff = True
         powerOn = True
-
+        firstLoop = True
         while True:
+            if firstLoop == True:
+                actualStartTime         = time.time()
+                currentTime             = actualStartTime
+                lastLoopTime            = actualStartTime
+                chunkRateStartTime      = actualStartTime
+                firstLoop = False
+                
             isWorkingOut = (GPIO.input(pinBlueLED) == 1)
             powerOn = True if (GPIO.input(pinBlueLED) == 1) or (GPIO.input(pinGreenLED) == 1) else False
             if powerOn == False:
