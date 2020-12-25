@@ -14,6 +14,11 @@ function getStats() {
     });
 }
 
+// var electron = require('electron');
+// var window = electron.remote.getCurrentWindow();
+// window.setFullScreen(true);
+
+
 function Meter(canvas) {
 
     var canvas = document.getElementById(canvas);

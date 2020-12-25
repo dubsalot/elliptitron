@@ -69,22 +69,8 @@ h1 {
   right:0;
   text-align: center; 
 }
-/* meter { -webkit-appearance: none; } 
-#resistance { 
-  -webkit-appearance: none;
-  background: gray;
-}
 
-meter > div {
-  height: 100%;
-  background: #28d1fa;
-  width: 50%;
-} */
-/* meter[value="1"] > div {
-  width: 25%;
-  background: red;
+.menu .material-icons
+{
+  font-size: 3em;
 }
-meter[value="2"] > div {
-  width: 50%;
-  background: yellow;
-} */

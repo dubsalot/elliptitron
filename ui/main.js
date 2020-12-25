@@ -6,7 +6,8 @@ function createWindow () {
     height: 1080,
     webPreferences: {
       nodeIntegration: true
-    }
+    }, 
+    fullscreen: true
   })
 
   //win.loadFile('gauge/gauge.html')
@@ -22,6 +23,7 @@ app.on('window-all-closed', () => {
 })
 
 app.on('activate', () => {
+  BrowserWindow.setFullScreen(true);
   if (BrowserWindow.getAllWindows().length === 0) {
     createWindow()
   }
