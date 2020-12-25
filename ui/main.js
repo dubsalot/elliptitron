@@ -2,14 +2,15 @@ const { app, BrowserWindow } = require('electron')
 
 function createWindow () {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1920,
+    height: 1080,
     webPreferences: {
       nodeIntegration: true
     }
   })
 
-  win.loadFile('gauge.html')
+  //win.loadFile('gauge/gauge.html')
+  win.loadFile('proto/proto.html')
 }
 
 app.whenReady().then(createWindow)

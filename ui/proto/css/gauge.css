@@ -1,0 +1,90 @@
+body {
+  background-color: #041a1e;
+  color: #28d1fa;
+  font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
+  letter-spacing: 0.2em;
+}
+h1 {
+  font-family: helvetica;
+  font-size: 2.5rem;
+  color: black;
+  position: relative;
+  top: 80px;
+  z-index: -1;
+}
+#calsPerMinute,
+#speed {
+  
+  border-radius: 50%;
+  box-shadow: 0 5px 14px black;
+  display: block;
+  height: 400px;
+  width: 400px;
+  position: relative;
+}
+
+.flex-container {
+  display: flex;
+  font-size: 20px;
+  text-align: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.flex-item {
+  padding: 10px;
+  justify-content: center;
+  display: flex;
+  position: relative;  
+  flex-direction: column;
+}
+
+.flex-item-left {
+  flex-direction: column;
+}
+
+.flex-item-right {
+  flex-direction: column;
+}
+
+#meters { width:1200px}
+
+.extlabel {
+  position: absolute;
+  top: 130px;
+  left: 0; 
+  right:0;
+  text-align: center; 
+  z-index: 9000;
+  padding: 5px;
+  font-size: 5em;
+  opacity: 0.7;
+}
+
+.inddescrip {
+  font-size: 1.2em;
+  position: absolute;
+  z-index: 9000;
+  top: 300px;
+  left: 0; 
+  right:0;
+  text-align: center; 
+}
+/* meter { -webkit-appearance: none; } 
+#resistance { 
+  -webkit-appearance: none;
+  background: gray;
+}
+
+meter > div {
+  height: 100%;
+  background: #28d1fa;
+  width: 50%;
+} */
+/* meter[value="1"] > div {
+  width: 25%;
+  background: red;
+}
+meter[value="2"] > div {
+  width: 50%;
+  background: yellow;
+} */

@@ -1,9 +1,9 @@
 #btn { 
-  display:block;
-  width:200px;
-  height:100px;
-  background-color: #cccccc;
+  padding:10px;
   color:blue;
+  background: rgba(21, 34, 46, 0.25);
+  border: none;
+  color: #fff;
 }
 body {
     background: #4535AD;
