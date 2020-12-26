@@ -50,7 +50,7 @@ decimalPlaces     = 1
 
 @route('/state')
 def returnarray():
-    metrics = get_metrics()
+    metrics = get_metrics(1)
     response.content_type = 'application/json'
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
@@ -84,7 +84,7 @@ def hall_sensor_callback(channel):
     hallStateOnCount += 1
     timeOfLastOnState = time.time()
 
-def get_metrics():
+def get_metrics(rounding):
     global currentTime               
     global totalElapsedTimeInSeconds 
     global totalElapsedTimeInHours   
@@ -98,20 +98,20 @@ def get_metrics():
     metrics = {
             'paused'                             : paused,
             'currentTime'                        : currentTime,               
-            'totalElapsedTimeInSeconds'          : totalElapsedTimeInSeconds, 
-            'totalElapsedTimeInHours'            : totalElapsedTimeInHours,   
-            'elapsedSinceLastOnStateInSeconds'   : elapsedSinceLastOnStateInSeconds,   
-            'stepsPerMinute'                     : stepsPerMinute,            
-            'distanceInFeet'                     : distanceInFeet,            
-            'distanceInMiles'                    : distanceInMiles,           
-            'speedInMph'                         : speedInMph,                
-            'calories'                           : calories,                  
-            'caloriesPerMinute'                  : caloriesPerMinute
+            'totalElapsedTimeInSeconds'          : round(totalElapsedTimeInSeconds, rounding), 
+            'totalElapsedTimeInHours'            : round(totalElapsedTimeInHours, rounding),   
+            'elapsedSinceLastOnStateInSeconds'   : round(elapsedSinceLastOnStateInSeconds, rounding),   
+            'stepsPerMinute'                     : round(stepsPerMinute, rounding),            
+            'distanceInFeet'                     : round(distanceInFeet, rounding),            
+            'distanceInMiles'                    : round(distanceInMiles, rounding),           
+            'speedInMph'                         : round(speedInMph, rounding),                
+            'calories'                           : round(calories, rounding),                  
+            'caloriesPerMinute'                  : round(caloriesPerMinute, rounding)
     }  
     return metrics           
 
 def print_summary():
-    metrics = get_metrics()
+    metrics = get_metrics(4)
     msg = f'''Summary:
     paused                             : {metrics['paused']}
     currentTime                        : {metrics['currentTime']},
