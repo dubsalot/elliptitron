@@ -60,7 +60,23 @@ def returnarray():
 def start_server():
     run(host=hostName, port=serverPort, debug=True, quiet=True)
 
-timeOfLastOnState = 0
+paused = False
+def pause_for_inactivity():
+    global elapsedSinceLastOnStateInSeconds
+    global paused
+    global currentTime
+
+    currentTime = time.time()
+    elapsedSinceLastOnStateInSeconds = currentTime - timeOfLastOnState
+
+    if elapsedSinceLastOnStateInSeconds < 3:
+        paused = False
+        return False
+
+    paused = True
+    return True
+
+timeOfLastOnState = 0.0
 def hall_sensor_callback(channel):
     global hallStateOnCount
     global timeOfLastOnState
@@ -80,37 +96,41 @@ def get_metrics():
     global calories                  
     global caloriesPerMinute
     metrics = {
-            'currentTime'               : currentTime,               
-            'totalElapsedTimeInSeconds' : totalElapsedTimeInSeconds, 
-            'totalElapsedTimeInHours'   : totalElapsedTimeInHours,   
-            'elapsedSinceLastOnState'   : elapsedSinceLastOnStateInSeconds,   
-            'stepsPerMinute'            : stepsPerMinute,            
-            'distanceInFeet'            : distanceInFeet,            
-            'distanceInMiles'           : distanceInMiles,           
-            'speedInMph'                : speedInMph,                
-            'calories'                  : calories,                  
-            'caloriesPerMinute'         : caloriesPerMinute
+            'paused'                             : paused,
+            'currentTime'                        : currentTime,               
+            'totalElapsedTimeInSeconds'          : totalElapsedTimeInSeconds, 
+            'totalElapsedTimeInHours'            : totalElapsedTimeInHours,   
+            'elapsedSinceLastOnStateInSeconds'   : elapsedSinceLastOnStateInSeconds,   
+            'stepsPerMinute'                     : stepsPerMinute,            
+            'distanceInFeet'                     : distanceInFeet,            
+            'distanceInMiles'                    : distanceInMiles,           
+            'speedInMph'                         : speedInMph,                
+            'calories'                           : calories,                  
+            'caloriesPerMinute'                  : caloriesPerMinute
     }  
     return metrics           
 
 def print_summary():
     metrics = get_metrics()
     msg = f'''Summary:
-    currentTime               : {metrics['currentTime']},
-    totalElapsedTimeInSeconds : {metrics['totalElapsedTimeInSeconds']}, 
-    totalElapsedTimeInHours   : {metrics['totalElapsedTimeInHours']},  
-    elapsedSinceLastOnState   : {metrics['elapsedSinceLastOnState']},  
-    stepsPerMinute            : {metrics['stepsPerMinute']},  
-    distanceInFeet            : {metrics['distanceInFeet']},  
-    distanceInMiles           : {metrics['distanceInMiles']},  
-    speedInMph                : {metrics['speedInMph']},  
-    calories                  : {metrics['calories']},  
-    caloriesPerMinute         : {metrics['caloriesPerMinute']}'''
+    paused                             : {metrics['paused']}
+    currentTime                        : {metrics['currentTime']},
+    totalElapsedTimeInSeconds          : {metrics['totalElapsedTimeInSeconds']}, 
+    totalElapsedTimeInHours            : {metrics['totalElapsedTimeInHours']},  
+    elapsedSinceLastOnStateInSeconds   : {metrics['elapsedSinceLastOnStateInSeconds']},  
+    stepsPerMinute                     : {metrics['stepsPerMinute']},  
+    distanceInFeet                     : {metrics['distanceInFeet']},  
+    distanceInMiles                    : {metrics['distanceInMiles']},  
+    speedInMph                         : {metrics['speedInMph']},  
+    calories                           : {metrics['calories']},  
+    caloriesPerMinute                  : {metrics['caloriesPerMinute']}'''
     print(msg);
 
 GPIO.add_event_detect(pinHallSensorNorth, GPIO.RISING, callback=hall_sensor_callback, bouncetime=300) 
 GPIO.add_event_detect(pinHallSensorSouth, GPIO.RISING, callback=hall_sensor_callback, bouncetime=300) 
 
+pausedTimeInSeconds = 0.0
+timeOfPause = 0.0
 if __name__ == '__main__':
 
     try:
@@ -119,23 +139,59 @@ if __name__ == '__main__':
             t.start()
 
 
+        print("Start moving when you're ready...")
+        while hallStateOnCount <= 0:
+            time.sleep(0.5)
+
+        lastCount = 0
         while True:
-            currentTime                        = time.time()
-            totalElapsedTimeInSeconds          = currentTime - actualStartTime
-            totalElapsedTimeInHours            = totalElapsedTimeInSeconds / 3600
-            elapsedSinceLastOnStateInSeconds   = currentTime - timeOfLastOnState
+            currentTime = time.time()
+            
+            if pause_for_inactivity():
+                print("Paused..")
+                pausedTimeInSeconds = 0.0
+                timeOfPause = time.time()
+                while pause_for_inactivity():
+                    time.sleep(1)
+                pausedTimeInSeconds = time.time() - timeOfPause
+                timeOfPause = 0.0
 
-            stepsPerMinute = 0.0 if hallStateOnCount == 0.0 else round((60 / totalElapsedTimeInSeconds) * hallStateOnCount, decimalPlaces)
-            distanceInFeet = hallStateOnCount * 2
-            distanceInMiles = distanceInFeet / 5280
-            speedInMph = 0 if totalElapsedTimeInSeconds == 0.00 else round(distanceInMiles / totalElapsedTimeInHours, decimalPlaces)
-            calories = totalElapsedTimeInSeconds * (0.2)    #12 cals per minute - 120 per hour  - 12/ 160 = per sec
-                                                            #6.5 = max
-                                                            #2244 =  9mph
-                                                            #1,928 joh for 60m at 7  85%
-                                                            #1,577	 5mph
+            if hallStateOnCount > lastCount:
+                currentTime = time.time()
+                lastCount = hallStateOnCount
+                
+                totalElapsedTimeInSeconds          = currentTime - actualStartTime - pausedTimeInSeconds
+                totalElapsedTimeInHours            = totalElapsedTimeInSeconds / 3600
+                
 
-            caloriesPerMinute = round((calories / totalElapsedTimeInSeconds) * 60, decimalPlaces)
+                stepsPerMinute = 0.0 if hallStateOnCount == 0.0 else round((60 / totalElapsedTimeInSeconds) * hallStateOnCount, decimalPlaces)
+                distanceInFeet = hallStateOnCount * 4.4
+                distanceInMiles = distanceInFeet / 5280
+                speedInMph = 0 if totalElapsedTimeInSeconds == 0.00 else round(distanceInMiles / totalElapsedTimeInHours, decimalPlaces)
+                
+                #260 lb medium resistance/speed 619 calories per hour
+                #120 lb medium resistance/speed 286 calories per hour
+
+                #100 - medium - 205 - 238 - 286    
+                #150 -        - 307 - 357 - 429     102 + 119 + 143 for each 50lbs
+                #200 - medium - 410 - 476 -
+                #250 -        -     - 595 - 
+                #300 - medium -     - 714 - 
+
+                # basic calorie formula
+                # low  intensity = (((weight-100) / 50) * 102) + 205
+                # med  intensity = (((weight-100) / 50) * 119) + 205
+                # high intensity = (((weight-100) / 50) * 143) + 205
+                calories = totalElapsedTimeInSeconds * (0.2)    #12 cals per minute - 120 per hour  - 12/ 160 = per sec
+                                                                #6.5 = max
+                                                                #2244 =  9mph
+                                                                #1,928 joh for 60m at 7  85%
+                                                                #1,577	 5mph
+
+                # hardcoding to 260lb person and med intensity for now
+                calories = totalElapsedTimeInSeconds * ((((260 - 100) / 50 * 119) + 205) / 3600)
+                
+                caloriesPerMinute = round((calories / totalElapsedTimeInSeconds) * 60, decimalPlaces)
 
             print_summary()
             time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
