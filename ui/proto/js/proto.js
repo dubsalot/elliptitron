@@ -8,7 +8,7 @@ function degToRad(degree) {
 }
 
 function getStats() {
-    jQuery.get("http://localhost:9001/state", function (data) {
+    jQuery.get("http://raspberrypi:9001/state", function (data) {
         console.log(data);
         if(data && data.mph)
             jQuery("#SpeedMetricLabel").html(data.mph)

@@ -1,10 +1,8 @@
-import curses, time
+import time, threading, sys
 import RPi.GPIO as GPIO    # Import Raspberry Pi GPIO library
-import threading
+
 from json import dumps
-import sys
-from bottle import route, run
-from bottle import response
+from bottle import route, run, response
 
 hostName = "192.168.1.85"   # for the web server. electron will call this. will replace with gRPC maybe
 serverPort = 9001
@@ -19,12 +17,6 @@ pinBlueLED = 38
 pinGreenLED = 36
 
 
-signal_on = 0
-signal_off = 1
-
-pinOn = False
-pinOff = True
-
 GPIO.setwarnings(False)    # Ignore warning for now
 GPIO.setmode(GPIO.BOARD)   # Use physical pin numbering
 GPIO.setup(pinHallSensorNorth, GPIO.IN, GPIO.PUD_DOWN)
@@ -32,219 +24,124 @@ GPIO.setup(pinHallSensorSouth, GPIO.IN, GPIO.PUD_DOWN)
 GPIO.setup(pinGreenLED, GPIO.IN, GPIO.PUD_DOWN) 
 GPIO.setup(pinBlueLED, GPIO.IN, GPIO.PUD_DOWN) 
 
-# used to account for multiple readings of On during one on-state
-onStateThreshold = 0.05
-timeOfLastOnState = 0.0
-
-
-countOnStates = 0
-chunkSize = 5
-chunkRate = 0.0
-
-
-
+#stridesPerMile      = (840 * 10) #leaving this way bc I'm guessing 840 steps per 0.1 miles based on first run
 # TRACKED OR CALCULATED METRICS 
-distance = 0.0
-stridesPerMile = (840 * 10) #leaving this way bc I'm guessing 840 steps per 0.1 miles based on first run
-calories = 0.0
-caloriesPerMinute = 0.0
-mph = 0
-totalRate = 0.0
-totalCountOnState = 0.0
+distance            = 0.0
+calories            = 0.0
+caloriesPerMinute   = 0.0
+speedInMph          = 0.0
+stepsPerMinute      = 0.0
+hallStateOnCount    = 0.0
+distanceInFeet      = 0.0
+distanceInMiles     = 0.0 
 
 # times
-actualStartTime         = time.time()
-currentTime             = actualStartTime
-lastLoopTime            = currentTime;
-chunkRateStartTime      = actualStartTime
-totalElapsedTime        = 0.0
-lastLastTime            = 0.0
-lastLastStepTime        = 0.0
-elapsedSinceLastOnState = 0.0
+actualStartTime                           = time.time()
+currentTime                               = actualStartTime
+totalElapsedTimeInSeconds                 = 0.0
+totalElapsedTimeInHours                   = 0.0
+elapsedSinceLastOnStateInSeconds          = 0.0
 
 #cLI display stuff and program control stuff
-startrow          = 1     #curses lib for STDOUT which row to begin printing
-firstcolumn       = 10    #curses - which column to start printing.  offsets are calculated from startrow and startcolumn
-loopSleepTime     = 0.05  #how long to pause the main outer loop between reads
-decimalPlaces     = 2
+loopSleepTime     = 1     #how long to pause the main outer loop between reads
+decimalPlaces     = 1
 
      
 
 @route('/state')
 def returnarray():
-    dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState, 'caloriesPerMinute': caloriesPerMinute}
+    metrics = get_metrics()
     response.content_type = 'application/json'
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
     response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'    
-    return dumps(dict)
+    return dumps(metrics)
 
 def start_server():
     run(host=hostName, port=serverPort, debug=True, quiet=True)
 
-def is_magnet_detected():
-    return  GPIO.input(pinHallSensorNorth)  == signal_on or GPIO.input(pinHallSensorSouth) == signal_on
+timeOfLastOnState = 0
+def hall_sensor_callback(channel):
+    global hallStateOnCount
+    global timeOfLastOnState
+
+    hallStateOnCount += 1
+    timeOfLastOnState = time.time()
+
+def get_metrics():
+    global currentTime               
+    global totalElapsedTimeInSeconds 
+    global totalElapsedTimeInHours   
+    global elapsedSinceLastOnStateInSeconds   
+    global stepsPerMinute            
+    global distanceInFeet            
+    global distanceInMiles           
+    global speedInMph                
+    global calories                  
+    global caloriesPerMinute
+    metrics = {
+            'currentTime'               : currentTime,               
+            'totalElapsedTimeInSeconds' : totalElapsedTimeInSeconds, 
+            'totalElapsedTimeInHours'   : totalElapsedTimeInHours,   
+            'elapsedSinceLastOnState'   : elapsedSinceLastOnStateInSeconds,   
+            'stepsPerMinute'            : stepsPerMinute,            
+            'distanceInFeet'            : distanceInFeet,            
+            'distanceInMiles'           : distanceInMiles,           
+            'speedInMph'                : speedInMph,                
+            'calories'                  : calories,                  
+            'caloriesPerMinute'         : caloriesPerMinute
+    }  
+    return metrics           
+
+def print_summary():
+    metrics = get_metrics()
+    msg = f'''Summary:
+    currentTime               : {metrics['currentTime']},
+    totalElapsedTimeInSeconds : {metrics['totalElapsedTimeInSeconds']}, 
+    totalElapsedTimeInHours   : {metrics['totalElapsedTimeInHours']},  
+    elapsedSinceLastOnState   : {metrics['elapsedSinceLastOnState']},  
+    stepsPerMinute            : {metrics['stepsPerMinute']},  
+    distanceInFeet            : {metrics['distanceInFeet']},  
+    distanceInMiles           : {metrics['distanceInMiles']},  
+    speedInMph                : {metrics['speedInMph']},  
+    calories                  : {metrics['calories']},  
+    caloriesPerMinute         : {metrics['caloriesPerMinute']}'''
+    print(msg);
+
+GPIO.add_event_detect(pinHallSensorNorth, GPIO.RISING, callback=hall_sensor_callback, bouncetime=300) 
+GPIO.add_event_detect(pinHallSensorSouth, GPIO.RISING, callback=hall_sensor_callback, bouncetime=300) 
 
 if __name__ == '__main__':
-
 
     try:
         if startServer == True:
             t = threading.Thread(target=start_server)
             t.start()
 
-        # pinWasOn = False
-        # intitialSteps = 0;
-        # print(f'Waiting for a few initial steps. intitialSteps: {intitialSteps}, North: {GPIO.input(pinHallSensorNorth)}, South: {GPIO.input(pinHallSensorSouth)}')
-        # while is_not_started() == True:
-        #     pinDetectsMagnet = is_magnet_detected()
-        #     if(pinDetectsMagnet):
-        #         pinWasOn = True
-        #     if pinDetectsMagnet == signal_off and pinWasOn == True:
-        #         pinWasOn = False
-        #         intitialSteps += 1
-        #     if(intitialSteps > 3):
-        #         set_working_out();
-        #     else:
-        #         time.sleep(loopSleepTime)
 
-
-        #init curses
-        stdscr = curses.initscr()
-
-        #print labels
-        stdscr.addstr(startrow,     firstcolumn, "rate per minute :")
-        stdscr.addstr(startrow + 1, firstcolumn, "chunk rate      :")
-        stdscr.addstr(startrow + 2, firstcolumn, "chunk size      :")        
-        stdscr.addstr(startrow + 3, firstcolumn, "since last step :")
-        stdscr.addstr(startrow + 4, firstcolumn, "time            :")
-        stdscr.addstr(startrow + 5, firstcolumn, "miles           :")
-        stdscr.addstr(startrow + 6, firstcolumn, "mph             :")
-        stdscr.addstr(startrow + 7, firstcolumn, "calories        :")
-
-        
-        pinOn = False
-        pinOff = True
-        powerOn = True
-        firstLoop = True
         while True:
-            if firstLoop == True:
-                actualStartTime         = time.time()
-                currentTime             = actualStartTime
-                lastLoopTime            = actualStartTime
-                chunkRateStartTime      = actualStartTime
-                firstLoop = False
-                
-            isWorkingOut = (GPIO.input(pinBlueLED) == 1)
-            powerOn = True if (GPIO.input(pinBlueLED) == 1) or (GPIO.input(pinGreenLED) == 1) else False
-            if powerOn == False:
-                break            
-            if isWorkingOut == False:
-                while isWorkingOut == False:
-                    isWorkingOut = (GPIO.input(pinBlueLED) == 1)
-                    powerOn = True if (GPIO.input(pinBlueLED) == 1) or (GPIO.input(pinGreenLED) == 1) else False
-                    if powerOn == False:
-                        break
-                    time.sleep(2)
-                if powerOn == False:
-                    break                    
-            else:
-                currentTime      = time.time()
-                totalElapsedTime = currentTime - actualStartTime
+            currentTime                        = time.time()
+            totalElapsedTimeInSeconds          = currentTime - actualStartTime
+            totalElapsedTimeInHours            = totalElapsedTimeInSeconds / 3600
+            elapsedSinceLastOnStateInSeconds   = currentTime - timeOfLastOnState
 
-                totalRate = 0.0 if totalCountOnState == 0.0 else round((60 / totalElapsedTime) * totalCountOnState, 4)
-                isHallSensorOn = is_magnet_detected()
+            stepsPerMinute = 0.0 if hallStateOnCount == 0.0 else round((60 / totalElapsedTimeInSeconds) * hallStateOnCount, decimalPlaces)
+            distanceInFeet = hallStateOnCount * 2
+            distanceInMiles = distanceInFeet / 5280
+            speedInMph = 0 if totalElapsedTimeInSeconds == 0.00 else round(distanceInMiles / totalElapsedTimeInHours, decimalPlaces)
+            calories = totalElapsedTimeInSeconds * (0.2)    #12 cals per minute - 120 per hour  - 12/ 160 = per sec
+                                                            #6.5 = max
+                                                            #2244 =  9mph
+                                                            #1,928 joh for 60m at 7  85%
+                                                            #1,577	 5mph
 
-                # this means val is now 0 and the previous loop, it was 1
-                if isHallSensorOn == False and pinOn == True: 
-                    pinOff = True
-                    pinOn = False
-                
-                # this means a whole button press occurred.
-                # this prevents multiple counts for a long button press
-                if isHallSensorOn == True and pinOff == True:
-                    pinOn = True
-                    pinOff = False
-                    if isWorkingOut == True:
-                        elapsedSinceLastOnState = round(0.0 if timeOfLastOnState == 0.0 else currentTime - timeOfLastOnState, decimalPlaces)
-                    else:
-                        elapsedSinceLastOnState = 0.0
+            caloriesPerMinute = round((calories / totalElapsedTimeInSeconds) * 60, decimalPlaces)
 
-                    onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
-                    countOnStates = countOnStates + 1
-                    totalCountOnState = totalCountOnState + 1
-                    feet = totalCountOnState * 2
-                    miles = feet / 5280
-                    hours = totalElapsedTime / 3600
-                    mph = 0 if totalElapsedTime == 0.00 else round(miles / hours, decimalPlaces)
-                    
-
-                    #12 cals per minute - 120 per hour  - 12/ 160 = per sec
-                    calories = totalElapsedTime * (0.2);
-                                                                #6.5 = max
-                                                                #2244 =  9mph
-                                                                #1,928 joh for 60m at 7  85%
-                                                                #1,577	 5mph
-                    timeOfLastOnState = time.time()
-
-                    caloriesPerMinute = round((calories / totalElapsedTime) * 60, decimalPlaces);
-
-                    stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
-                    stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
-                    stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
-
-                    stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(miles, decimalPlaces)))
-                    stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
-                    stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
-                    stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
-             
-                # end if val = 1
-
-                
-                if countOnStates >= chunkSize:
-                    if chunkRateStartTime != 0.0:
-                        timeFor5Steps = time.time() - chunkRateStartTime
-                        chunkRate = 0.0 if chunkRateStartTime == 0.0 else round(((60 / (time.time() - chunkRateStartTime)) * chunkSize), decimalPlaces)
-                    countOnStates = 0
-                    chunkRateStartTime = time.time()      #reset the chunk counter  
-                # end  if countOnStates >= chunkSize
-
-                stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))    
-                stdscr.addstr(startrow + 4, firstcolumn + 20, str(round(totalElapsedTime, decimalPlaces)))
-                stdscr.addstr(startrow + 12, firstcolumn + 20, f'steps   :{str(totalCountOnState)}')
-                stdscr.addstr(startrow + 15, firstcolumn + 20, f'val     : {str(isHallSensorOn)}')
-                
-                stdscr.refresh()    # refresh curses UI. This can be adusted based on time (e.g. every 3 seconds)
-                time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
-
+            print_summary()
+            time.sleep(loopSleepTime)    # letting this loop run with no sleep() results in 100% CPU usage
         # end the main whileloop
-    
     except KeyboardInterrupt:
-        curses.echo()
-        curses.endwin()
         GPIO.cleanup()
-        print(f'rate per minute : {str(totalRate)}')
-        print(f'chunk rate      : {str(chunkRate)}')
-        print(f'chunk size      : {str(chunkSize)}')
-        print(f'since last step : {str(elapsedSinceLastOnState)}')
-        print(f'time            : {str(round(totalElapsedTime, decimalPlaces))}')
-        print(f'miles           : {str(round(distance, decimalPlaces))}')
-        print(f'mph             : {str(round(mph, decimalPlaces))}')
-        print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
-        print(f'total steps     : {str(totalCountOnState)}')
-        print(f'calories        : {str(round(calories, decimalPlaces))}')
     finally:
-        curses.echo()
-        curses.endwin()
         GPIO.cleanup()
-        print(f'rate per minute : {str(totalRate)}')
-        print(f'chunk rate      : {str(chunkRate)}')
-        print(f'chunk size      : {str(chunkSize)}')
-        print(f'since last step : {str(elapsedSinceLastOnState)}')
-        print(f'time            : {str(round(totalElapsedTime, decimalPlaces))}')
-        print(f'miles           : {str(round(distance, decimalPlaces))}')
-        print(f'mph             : {str(round(mph, decimalPlaces))}')
-        print(f'time total      : {round(time.time() - lastLoopTime , decimalPlaces)}')
-        print(f'total steps     : {str(totalCountOnState)}')
-        print(f'calories        : {str(round(calories, decimalPlaces))}')
     exit
