@@ -2,6 +2,7 @@ import '../node_modules/material-icons/css/material-icons.css'
 import './css/proto.css'
 import React, { useState, ReactDOM, useEffect } from 'react';
 import {AccessAlarm, Fullscreen} from '@material-ui/icons'
+//var jQuery = require('jquery');
 
 
 
@@ -63,11 +64,34 @@ function Meter(canvas) {
 }
 
 function Proto() {
+    const [stats, setStats] = useState({"TotalElapsedTime": 50.7156662940979, "distance": 0.003472222222222222, "calories": 8.191355562210083, "mph": 0.31, "totalCountOnState": 10.0, "caloriesPerMinute": 0.0});
+    const getStats = () => {
+        fetch("http://192.168.1.85:9001/state")
+          .then(res => res.json())
+          .then(
+            (result) => {
+              console.log(result);
+              setStats(result)          
+            },
+            // Note: it's important to handle errors here
+            // instead of a catch() block so that we don't swallow
+            // exceptions from actual bugs in components.
+            (error) => {
+              console.error(error, "error");
+            }
+          )
+    };
 
     useEffect(() => {
+        const interval = setInterval(() => {
+            getStats();
+          }, 1000);
+          return () => clearInterval(interval);
+
         Meter("calsPerMinute");
         Meter("speed");
-      });
+      }, []);
+
     return (
         <div className="flex-container">
             <div className="menu flex-item">
@@ -75,17 +99,17 @@ function Proto() {
                 <Fullscreen />
             </div>
             <div className="flex-item">
-                <div className="extlabel">0</div>
+                <div className="extlabel">{stats.caloriesPerMinute}</div>
                 <div className="inddescrip">Calories/Minute</div>
                 <canvas id="calsPerMinute" width="800" height="800" className="gauge"></canvas>
             </div>
             <div className="flex-item">
-                <div id="SpeedMetricLabel" className="extlabel">0</div>
+                <div id="SpeedMetricLabel" className="extlabel">{stats.mph}</div>
                 <div className="inddescrip">MPH</div>
                 <canvas id="speed" width="800" height="800" className="gauge"></canvas>
             </div>
         </div>
-    );
+    );  
 }
 
 function degToRad(degree) {
@@ -93,12 +117,10 @@ function degToRad(degree) {
     return degree * factor;
 }
 
-function getStats() {
-    // jQuery.get("http://localhost:9001/state", function (data) {
-    //     console.log(data);
-    //     if (data && data.mph)
-    //         jQuery("#SpeedMetricLabel").html(data.mph)
-    // });
-}
+
+
+function getd() {
+
+  }
 
 export default Proto;
