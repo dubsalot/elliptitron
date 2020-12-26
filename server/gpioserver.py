@@ -6,7 +6,7 @@ import sys
 from bottle import route, run
 from bottle import response
 
-hostName = "localhost"   # for the web server. electron will call this. will replace with gRPC maybe
+hostName = "192.168.1.85"   # for the web server. electron will call this. will replace with gRPC maybe
 serverPort = 9001
 jsonEncoding = 'utf-8'
 startServer = False
@@ -45,8 +45,9 @@ chunkRate = 0.0
 
 # TRACKED OR CALCULATED METRICS 
 distance = 0.0
-stridesPerMile = 63360 / 22
+stridesPerMile = (840 * 10) #leaving this way bc I'm guessing 840 steps per 0.1 miles based on first run
 calories = 0.0
+caloriesPerMinute = 0.0
 mph = 0
 totalRate = 0.0
 totalCountOnState = 0.0
@@ -71,8 +72,11 @@ decimalPlaces     = 2
 
 @route('/state')
 def returnarray():
-    dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState}
+    dict= {'TotalElapsedTime': totalElapsedTime, 'distance': distance, 'calories': calories, 'mph':  mph, 'totalCountOnState': totalCountOnState, 'caloriesPerMinute': caloriesPerMinute}
     response.content_type = 'application/json'
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    response.headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, OPTIONS'
+    response.headers['Access-Control-Allow-Headers'] = 'Origin, Accept, Content-Type, X-Requested-With, X-CSRF-Token'    
     return dumps(dict)
 
 def start_server():
@@ -169,23 +173,27 @@ if __name__ == '__main__':
                     onsPerMinute = 0.0 if elapsedSinceLastOnState <= 0 else round(60 / elapsedSinceLastOnState, decimalPlaces)
                     countOnStates = countOnStates + 1
                     totalCountOnState = totalCountOnState + 1
-                    distance = totalCountOnState / stridesPerMile
-                    mph = 0 if totalElapsedTime == 0.00 else round(distance / (totalElapsedTime / 3600), decimalPlaces)
+                    feet = totalCountOnState * 2
+                    miles = feet / 5280
+                    hours = totalElapsedTime / 3600
+                    mph = 0 if totalElapsedTime == 0.00 else round(miles / hours, decimalPlaces)
                     
 
                     #12 cals per minute - 120 per hour  - 12/ 160 = per sec
-                    calories = totalElapsedTime * (0.2)
+                    calories = totalElapsedTime * (0.2);
                                                                 #6.5 = max
                                                                 #2244 =  9mph
                                                                 #1,928 joh for 60m at 7  85%
                                                                 #1,577	 5mph
                     timeOfLastOnState = time.time()
 
+                    caloriesPerMinute = round((calories / totalElapsedTime) * 60, decimalPlaces);
+
                     stdscr.addstr(startrow,     firstcolumn + 20, str(totalRate))
                     stdscr.addstr(startrow + 1, firstcolumn + 20, str(chunkRate))
                     stdscr.addstr(startrow + 2, firstcolumn + 20, str(chunkSize))
 
-                    stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(distance, decimalPlaces)))
+                    stdscr.addstr(startrow + 5, firstcolumn + 20, str(round(miles, decimalPlaces)))
                     stdscr.addstr(startrow + 6, firstcolumn + 20, str(round(mph, decimalPlaces)))
                     stdscr.addstr(startrow + 7, firstcolumn + 20, str(round(calories, decimalPlaces)))
                     stdscr.addstr(startrow + 3, firstcolumn + 20, str(elapsedSinceLastOnState))
