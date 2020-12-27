@@ -1,7 +1,7 @@
 import '../node_modules/material-icons/css/material-icons.css'
 import './css/proto.css'
 import React, { useState, ReactDOM, useEffect } from 'react';
-import {AccessAlarm, Fullscreen} from '@material-ui/icons'
+import {AccessAlarm, Fullscreen, RoundedCorner} from '@material-ui/icons'
 //var jQuery = require('jquery');
 
 
@@ -17,6 +17,18 @@ function Buttons() {
         // console.log(win);
     })
 }
+
+// 'paused'                             : paused,
+// 'currentTime'                        : currentTime,               
+// 'totalElapsedTimeInSeconds'          : totalElapsedTimeInSeconds, 
+// 'totalElapsedTimeInHours'            : totalElapsedTimeInHours,   
+// 'elapsedSinceLastOnStateInSeconds'   : elapsedSinceLastOnStateInSeconds,   
+// 'stepsPerMinute'                     : stepsPerMinute,            
+// 'distanceInFeet'                     : distanceInFeet,            
+// 'distanceInMiles'                    : distanceInMiles,           
+// 'speedInMph'                         : speedInMph,                
+// 'calories'                           : calories,                  
+// 'caloriesPerMinute'                  : caloriesPerMinute
 
 function Meter(canvas) {
 
@@ -94,19 +106,21 @@ function Proto() {
 
     return (
         <div className="flex-container">
-            <div className="menu flex-item">
+            {/* <div className="menu flex-item">
                 <AccessAlarm />
                 <Fullscreen />
-            </div>
+            </div> */}
             <div className="flex-item">
-                <div className="extlabel">{stats.caloriesPerMinute}</div>
-                <div className="inddescrip">Calories/Minute</div>
+                <div className="extlabel">{stats.calories}</div>
+                <div className="inddescrip">Calories</div>
                 <canvas id="calsPerMinute" width="800" height="800" className="gauge"></canvas>
+                <span>calories/minute: {stats.caloriesPerMinute}</span>
             </div>
             <div className="flex-item">
-                <div id="SpeedMetricLabel" className="extlabel">{stats.mph}</div>
+                <div id="SpeedMetricLabel" className="extlabel">{stats.speedInMph}</div>
                 <div className="inddescrip">MPH</div>
                 <canvas id="speed" width="800" height="800" className="gauge"></canvas>
+                <span>Paused: {(stats.paused == true).toString()}</span>
             </div>
         </div>
     );  
