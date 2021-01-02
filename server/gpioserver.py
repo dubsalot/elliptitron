@@ -13,16 +13,12 @@ startServer = len(sys.argv) > 1 and sys.argv.__contains__("start-server")
 
 pinHallSensorNorth = 40
 pinHallSensorSouth = 37
-pinBlueLED = 38
-pinGreenLED = 36
 
 
 GPIO.setwarnings(False)    # Ignore warning for now
 GPIO.setmode(GPIO.BOARD)   # Use physical pin numbering
 GPIO.setup(pinHallSensorNorth, GPIO.IN, GPIO.PUD_DOWN)
 GPIO.setup(pinHallSensorSouth, GPIO.IN, GPIO.PUD_DOWN)  
-GPIO.setup(pinGreenLED, GPIO.IN, GPIO.PUD_DOWN) 
-GPIO.setup(pinBlueLED, GPIO.IN, GPIO.PUD_DOWN) 
 
 #stridesPerMile      = (840 * 10) #leaving this way bc I'm guessing 840 steps per 0.1 miles based on first run
 # TRACKED OR CALCULATED METRICS 
