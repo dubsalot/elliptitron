@@ -1,14 +1,8 @@
 import '../node_modules/material-icons/css/material-icons.css'
-import './css/proto.css'
+import './proto.css'
 import React, { useState, ReactDOM, useEffect } from 'react';
 import {AccessAlarm, Fullscreen, RoundedCorner} from '@material-ui/icons'
-//var jQuery = require('jquery');
 
-
-
-// var electron = require('electron');
-// var window = electron.remote.getCurrentWindow();
-// window.setFullScreen(true);
 
 function Buttons() {
 
@@ -18,27 +12,18 @@ function Buttons() {
     })
 }
 
-// 'paused'                             : paused,
-// 'currentTime'                        : currentTime,               
-// 'totalElapsedTimeInSeconds'          : totalElapsedTimeInSeconds, 
-// 'totalElapsedTimeInHours'            : totalElapsedTimeInHours,   
-// 'elapsedSinceLastOnStateInSeconds'   : elapsedSinceLastOnStateInSeconds,   
-// 'stepsPerMinute'                     : stepsPerMinute,            
-// 'distanceInFeet'                     : distanceInFeet,            
-// 'distanceInMiles'                    : distanceInMiles,           
-// 'speedInMph'                         : speedInMph,                
-// 'calories'                           : calories,                  
-// 'caloriesPerMinute'                  : caloriesPerMinute
+
 
 function Meter(canvas) {
+    var hlc = getComputedStyle(document.documentElement).getPropertyValue('--highlight-color');
 
     var canvas = document.getElementById(canvas);
     var ctx = canvas.getContext('2d');
-    ctx.strokeStyle = '#28d1fa';
+    ctx.strokeStyle = hlc;
 
     ctx.lineCap = 'round';
     ctx.shadowBlur = 15;
-    ctx.shadowColor = '#28d1fa';
+    ctx.shadowColor = hlc;
 
     // Background
     var gradient = ctx.createRadialGradient(400, 400, 5, 400, 400, 300);
@@ -62,28 +47,44 @@ function Meter(canvas) {
     ctx.beginPath();
     ctx.arc(400, 400, 360, degToRad(from), degToRad(400));
     ctx.stroke();
-
-    //speed goes here
-    // ctx.font = "100px Helvetica";
-    // ctx.fillStyle = '#28d1fa';
-    // ctx.fillText(val, 200, 220);
-
-    //label goes here
-    // ctx.font = "15px Helvetica";
-    // ctx.fillStyle = '#28d1fa';
-    // ctx.fillText(label, 75, 250);
     return this;
 }
 
 function Proto() {
-    const [stats, setStats] = useState({"TotalElapsedTime": 50.7156662940979, "distance": 0.003472222222222222, "calories": 8.191355562210083, "mph": 0.31, "totalCountOnState": 10.0, "caloriesPerMinute": 0.0});
+    var def = {
+        "paused": 0.0,
+        "currentTime": 0.0,               
+        "totalElapsedTimeInSeconds": 0.0, 
+        "totalElapsedTimeInHours": 0.0,   
+        "elapsedSinceLastOnStateInSeconds": 0.0,   
+        "stepsPerMinute": 0.0,            
+        "distanceInFeet": 0.0,            
+        "distanceInMiles": 0.0,           
+        "speedInMph": 0.0,                
+        "calories": 0.0,                  
+        "caloriesPerMinute": 0.00,
+        "containerClass": "flex-container"
+    };    
+    const [stats, setStats] = useState(def);
     const getStats = () => {
         fetch("http://192.168.1.85:9001/state")
           .then(res => res.json())
           .then(
             (result) => {
               console.log(result);
-              setStats(result)          
+              result.containerClass="flex-container";
+              document.documentElement.style.setProperty('--highlight-color', '#28d1fa');              
+              document.documentElement.style.setProperty('--background-color', '#041a1e'); 
+              if(result.paused == true)
+              {
+                document.documentElement.style.setProperty('--highlight-color', '#cedd6d');              
+                document.documentElement.style.setProperty('--background-color', '#1e1e16'); 
+                result.containerClass += " paused";
+              }
+              Meter("calsPerMinute");
+              Meter("speed");                   
+              setStats(result);
+
             },
             // Note: it's important to handle errors here
             // instead of a catch() block so that we don't swallow
@@ -99,13 +100,11 @@ function Proto() {
             getStats();
           }, 1000);
           return () => clearInterval(interval);
-
-        Meter("calsPerMinute");
-        Meter("speed");
       }, []);
 
     return (
-        <div className="flex-container">
+       
+        <div className={stats.containerClass}>
             {/* <div className="menu flex-item">
                 <AccessAlarm />
                 <Fullscreen />

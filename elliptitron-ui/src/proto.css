@@ -1,9 +1,15 @@
+:root {
+      --highlight-color: #28d1fa;
+      --background-color: #041a1e;
+}
+
 body {
-  background-color: #041a1e;
-  color: #28d1fa;
+  background-color: var(--background-color);
+  color: var(--highlight-color);
   font-family: Impact, Haettenschweiler, "Arial Narrow Bold", sans-serif;
   letter-spacing: 0.2em;
 }
+
 h1 {
   font-family: helvetica;
   font-size: 2.5rem;
