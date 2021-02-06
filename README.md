@@ -37,7 +37,10 @@ Sync the data real-time "somewhere."  This really did start because I didn't lik
 
 
 ## Software
-The code in this respository - it's not the best, but the project is really just a learning experience for me, so I'm not going to beat myself over it.
+
+I [vscode over ssh](https://code.visualstudio.com/docs/remote/remote-overview) to the raspberry pi to develop on this project.
+
+The code in this respository - it's not the best, but the project is really just a learning experience for me, so I'm not going to beat myself up over it.
 
 - In the UI folder, you will find an Electron + React based user interface.
 - In the Server folder, you will find the python code that interacts with Raspberry GPIO pins and a [bottle based](https://bottlepy.org/docs/dev/) webserver 
