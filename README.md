@@ -1,4 +1,4 @@
-# elliptitron
+# Elliptitron
 
 Repository is a personal learning project for me. I have a bowflex [bxe216 elliptical machine](https://www.ellipticalreviews.com/bowflex/bxe216/) and I am not fond of it's dashboard or the way it syncs data with the app on my phone.
 
