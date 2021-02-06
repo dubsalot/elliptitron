@@ -17,7 +17,7 @@ I considered tying into the circuitry of the ellipitcal and control it with my o
 I could control that stepper motor with a raspberry pi. I could also use the pi to measure wheel speed. I assume "incline" is handled a similar way, but I have not dug into it yet.
 
 I chose to not wire into the machine and instead use sensors to read current state and display on the new UI. There are a couple of benefits here:
-- Leave the machine in tact in case I need a warranty repair or in case I sell it.
+- Leave the machine intact in case I need a warranty repair or in case I sell it.
 - I likely can resuse what I build on a new elliptical 
 
 
