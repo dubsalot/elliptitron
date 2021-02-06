@@ -2,7 +2,7 @@
 
 Repository is a personal learning project for me. I have a bowflex [bxe216 elliptical machine](https://www.ellipticalreviews.com/bowflex/bxe216/) and I am not fond of it's dashboard or the way it syncs data with the app on my phone.
 
-*Important note*: I use [vscode over ssh](https://code.visualstudio.com/docs/remote/remote-overview) to the raspberry pi to develop on this project.
+The code is developed on a raspberry pi using [vscode over ssh](https://code.visualstudio.com/docs/remote/remote-overview).
 
 ## I have three goals for this project other than learning: 
 - sync data real-time as I workout to cloud storage: Google Drive, One Drive, or maybe an azure hosted webservice.
