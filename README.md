@@ -50,9 +50,10 @@ The server handles the metrics and makes the available to a json webservice.
 The UI calls that webservice as often as it needs (once per second currently)
 
 # Some images
-What electronics project if fun without suspicious looking devices mounted on the side of something?
+#### What electronics project if fun without suspicious looking devices mounted on the side of something?
+
 ![mounted on side of elliptical](docs/screens/mounted.jpg)
 
 
-This is a screen of elliptitron "in action."  I promise it works and looks better than this. These are just some photos I have taken along the way.
+This is a picture of elliptitron "in action."  I promise it works and looks better than this. These are just some photos I have taken along the way.
 ![screen shot](docs/screens/screenshot.jpg)
