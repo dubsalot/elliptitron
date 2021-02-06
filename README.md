@@ -2,6 +2,8 @@
 
 Repository is a personal learning project for me. I have a bowflex [bxe216 elliptical machine](https://www.ellipticalreviews.com/bowflex/bxe216/) and I am not fond of it's dashboard or the way it syncs data with the app on my phone.
 
+*Important note*: I use [vscode over ssh](https://code.visualstudio.com/docs/remote/remote-overview) to the raspberry pi to develop on this project.
+
 ## I have three goals for this project other than learning: 
 - sync data real-time as I workout to cloud storage: Google Drive, One Drive, or maybe an azure hosted webservice.
 - imrpove the physical dashboard witb a nice UI on a large touch screen
@@ -37,9 +39,6 @@ Sync the data real-time "somewhere."  This really did start because I didn't lik
 
 
 ## Software
-
-I [vscode over ssh](https://code.visualstudio.com/docs/remote/remote-overview) to the raspberry pi to develop on this project.
-
 The code in this respository - it's not the best, but the project is really just a learning experience for me, so I'm not going to beat myself up over it.
 
 - In the UI folder, you will find an Electron + React based user interface.
