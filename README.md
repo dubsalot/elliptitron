@@ -2,6 +2,8 @@
 
 Repository is a personal learning project for me. I have a bowflex [bxe216 elliptical machine](https://www.ellipticalreviews.com/bowflex/bxe216/) and I am not fond of it's dashboard or the way it syncs data with the app on my phone.
 
+You can find some images below of the project.
+
 The code is developed on a raspberry pi using [vscode over ssh](https://code.visualstudio.com/docs/remote/remote-overview).
 
 ## I have three goals for this project other than learning: 
@@ -46,3 +48,11 @@ The code in this respository - it's not the best, but the project is really just
 
 The server handles the metrics and makes the available to a json webservice.
 The UI calls that webservice as often as it needs (once per second currently)
+
+# Some images
+What electronics project if fun without suspicious looking devices mounted on the side of something?
+[!mounted on side of elliptical](docs/screens/mounted.jpg)
+
+
+This is a screen of elliptitron "in action."  I promise it works and looks better than this. These are just some photos I have taken along the way.
+[!screen shot](docs/screens/screenshot.jpg)
