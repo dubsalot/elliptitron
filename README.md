@@ -49,7 +49,7 @@ The server handles the metrics and makes the available to a json webservice.
 The UI calls that webservice as often as it needs (once per second currently)
 
 # Some images
-#### What electronics project if fun without suspicious looking devices mounted on the side of something?
+#### What electronics project is fun without suspicious looking devices mounted on the side of something?
 
 ![mounted on side of elliptical](docs/screens/mounted.jpg)
 
