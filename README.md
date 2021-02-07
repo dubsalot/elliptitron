@@ -45,7 +45,7 @@ The code in this respository - it's not the best, but the project is really just
 - In the UI folder, you will find an Electron + React based user interface.
 - In the Server folder, you will find the python code that interacts with Raspberry GPIO pins and a [bottle based](https://bottlepy.org/docs/dev/) webserver 
 
-The server handles the metrics and makes the available to a json webservice.
+The server handles the metrics and makes them available to a json webservice.
 The UI calls that webservice as often as it needs (once per second currently)
 
 # Some images
